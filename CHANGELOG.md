@@ -7,7 +7,8 @@ Tableau de bord :
 - les volets sont groupés par façade (sous-titre par façade), avec un choix « Liste unique » ;
 - l'ordre des volets se change avec les flèches (ou par glisser-déposer sur ordinateur) et s'enregistre tout de suite ;
 - chaque volet affiche l'état de ses fenêtres et portes (ouverte, fermée, capteur indisponible) ;
-- onglet Volets : les capteurs d'ouverture à nom long ne sortent plus du cadre.
+- onglet Volets : les capteurs d'ouverture à nom long ne sortent plus du cadre ;
+- un workflow crée automatiquement une version GitHub à chaque tag `vX.Y.Z` : HACS affiche alors un vrai numéro de version au lieu d'un hash.
 
 ## 0.3.0
 
