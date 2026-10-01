@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.0
+
+- Panneau : chaque mode global (Automatique, Manuel, Arrêt) et chaque scénario (Été, Hiver, Vacances, Désactivé) est décrit sous son sélecteur du tableau de bord et dans l'onglet « Entités » (liste des valeurs).
+- Scénario Hiver : option « Ne pas ouvrir les volets quand l'alarme est activée » (onglet Scénarios) avec choix de l'entité `alarm_control_panel`. Alarme activée = états `armed_*` ou `triggered` ; entité absente ou indisponible : rien n'est bloqué.
+- README : une capture d'écran par onglet du panneau (données de démonstration).
+- Cumul des évolutions 0.3.x : bouton « Auto » par volet, seuils des scénarios (été et hiver) en entités `number`, capteurs de façade persistants sur la journée.
+
 ## 0.3.10
 
 - Nouvelles entités `number.volets_seuil_hiver_gain_exterieur` et `number.volets_seuil_hiver_gain_piece` (seuils du scénario « winter », gain solaire), modifiables depuis les dashboards, comme les seuils d'été.

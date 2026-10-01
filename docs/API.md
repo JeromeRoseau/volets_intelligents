@@ -45,7 +45,9 @@ Stockée dans `.storage/volets_intelligents.config`. Envoyée/reçue en entier p
                   "open_outdoor": 22,  "open_room": 22,
                   "release_mode": "all" },            // "all" | "any"
     "winter":   { "label": "Hiver",    "kind": "solar_gain",
-                  "gain_room_below": 20, "gain_outdoor_below": 15 },
+                  "gain_room_below": 20, "gain_outdoor_below": 15,
+                  "block_when_alarm": false,            // true : ne pas ouvrir tant que l'alarme est activée
+                  "alarm_entity": null },               // str|null (alarm_control_panel)
     "vacation": { "label": "Vacances", "kind": "hold_shaded" },
     "off":      { "label": "Désactivé","kind": "off" }
   },

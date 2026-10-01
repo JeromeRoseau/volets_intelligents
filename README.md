@@ -30,7 +30,7 @@ graphique** et une **carte Lovelace**. Aucun YAML à écrire.
   seul un volet dont la gestion automatique est désactivée y échappe. Pour chaque volet, choisissez l'ordre
   qui le met en sécurité : « ouvrir » (volet roulant remonté) ou « fermer » (store ou banne rentré).
 - **Météo** : un ciel couvert peut neutraliser l'effet du soleil.
-- **Scénarios** : Été (protection), Hiver (ouvre pour profiter du soleil quand la pièce est fraîche),
+- **Scénarios** : Été (protection), Hiver (ouvre pour profiter du soleil quand la pièce est fraîche, avec l'option de ne pas ouvrir quand l'alarme est activée),
   Vacances (protège dès qu'il y a du soleil), Désactivé. Choix manuel ou automatique selon le mois.
 - **Sécurités** : délai après redémarrage, aucune action si la température extérieure ou le capteur
   d'exposition est indisponible.
@@ -92,8 +92,34 @@ besoin. La liste des dépôts dans le panneau HACS lui-même garde son image par
 | Tableau de bord | Mode global, scénario, températures, plage active, état de chaque volet, pause et reprise. |
 | Volets | Liste des volets : façade, position de protection, méthode, température de la pièce, fenêtres. |
 | Façades | Orientation, angle d'éclairage, masque d'horizon, plages d'ensoleillement du jour. |
-| Scénarios | Seuils de chaque scénario. |
+| Scénarios | Seuils de chaque scénario ; en Hiver, option pour ne pas ouvrir quand l'alarme est activée. |
 | Réglages | Capteurs extérieurs, plage active, pause manuelle, vent, météo, import et export JSON. |
+
+Les captures ci-dessous utilisent des données de démonstration.
+
+### Tableau de bord
+
+![Tableau de bord](docs/screenshots/tableau-de-bord.png)
+
+### Volets
+
+![Volets](docs/screenshots/volets.png)
+
+### Façades
+
+![Façades](docs/screenshots/facades.png)
+
+### Scénarios
+
+![Scénarios](docs/screenshots/scenarios.png)
+
+### Entités
+
+![Entités](docs/screenshots/entites.png)
+
+### Réglages
+
+![Réglages](docs/screenshots/reglages.png)
 
 Pour démarrer vite avec une configuration complète, collez le contenu d'`examples/config-jerome.json`
 dans Réglages > Sauvegarde et import, puis cliquez sur **Importer** et **Enregistrer**.
@@ -132,7 +158,7 @@ nom de votre volet.
 
 | Entité | Type | Valeurs | Usage |
 |---|---|---|---|
-| `select.volets_mode` | select | `auto`, `manual`, `off` (affichés Automatique, Manuel, Arrêté) | Mode global. Modifiable depuis un tableau de bord. |
+| `select.volets_mode` | select | `auto`, `manual`, `off` (affichés Automatique, Manuel, Arrêté) | Mode global. **Automatique** : le moteur décide et envoie les ordres. **Manuel** : aucun ordre envoyé (les volets affichent « Mode manuel »). **Arrêté** : aucune décision ni ordre (la sécurité vent reste prioritaire). Modifiable depuis un tableau de bord. |
 | `select.volets_scenario` | select | `summer`, `winter`, `vacation`, `off` (affichés Été, Hiver, Vacances, Désactivé) | Scénario actif. Modifiable, sauf quand le scénario automatique selon le mois est activé. |
 | `sensor.volets_temperature_exterieure_effective` | sensor (°C) | nombre, ou indisponible | Température extérieure réellement utilisée par les règles (maximum entre la mesure et la température ressentie si l'option est activée). |
 

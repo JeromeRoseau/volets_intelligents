@@ -186,6 +186,9 @@ class VoletsManager:
                 entities.add(s[key])
         if s["window"]["end_mode"] == END_ENTITY and s["window"]["end_entity"]:
             entities.add(s["window"]["end_entity"])
+        for scenario in self.config["scenarios"].values():
+            if scenario.get("alarm_entity"):
+                entities.add(scenario["alarm_entity"])
         for facade in self.config["facades"]:
             if facade["exposure"]["entity"]:
                 entities.add(facade["exposure"]["entity"])
@@ -299,6 +302,19 @@ class VoletsManager:
             elif self._wind_exceeded and wind < s["wind_threshold"] * s["wind_release_ratio"]:
                 self._wind_exceeded = False
         return wind, self._wind_exceeded
+
+    def _alarm_armed(self, scenario: dict[str, Any]) -> bool:
+        """True si le scénario demande de respecter l'alarme et qu'elle est activée.
+
+        « Activée » = un état `armed_*` (away, home, night, vacation, custom_bypass) ou `triggered`.
+        Entité absente ou indisponible : on ne bloque pas.
+        """
+        if not scenario.get("block_when_alarm") or not scenario.get("alarm_entity"):
+            return False
+        state = self.hass.states.get(scenario["alarm_entity"])
+        if state is None or state.state in _INVALID:
+            return False
+        return state.state.startswith("armed_") or state.state == "triggered"
 
     def _is_sunny(self) -> bool:
         s = self.config["settings"]
@@ -488,6 +504,7 @@ class VoletsManager:
             grace_active=grace,
             outdoor=outdoor,
             wind_exceeded=wind_exceeded,
+            alarm_armed=self._alarm_armed(scenario),
             tolerance=settings["position_tolerance"],
             min_move=timedelta(minutes=settings["min_move_interval_minutes"]),
         )

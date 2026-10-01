@@ -76,6 +76,7 @@ class Env:
     grace_active: bool = False
     outdoor: float | None = None
     wind_exceeded: bool = False
+    alarm_armed: bool = False
     tolerance: int = 3
     min_move: timedelta = timedelta(minutes=10)
 
@@ -337,6 +338,12 @@ def _gain(cover: dict[str, Any], inp: CoverInputs, rt: CoverRuntime, env: Env) -
     cold_room = room is not None and room < sc["gain_room_below"]
     cold_out = outdoor < sc["gain_outdoor_below"]
     if cold_room and cold_out and not is_open(cover, inp, env.tolerance):
+        if env.alarm_armed:
+            return Decision(
+                ST_WATCHING,
+                f"{_exposure_text(inp)} et pièce fraîche, mais l'alarme est activée : "
+                "le volet reste fermé",
+            )
         if _cooldown(rt, env):
             return Decision(ST_COOLDOWN, "Attente de l'intervalle minimal entre deux mouvements")
         return Decision(

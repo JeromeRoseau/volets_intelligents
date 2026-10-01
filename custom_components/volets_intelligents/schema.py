@@ -83,6 +83,8 @@ DEFAULT_CONFIG: dict[str, Any] = {
             "kind": KIND_GAIN,
             "gain_room_below": 20,
             "gain_outdoor_below": 15,
+            "block_when_alarm": False,
+            "alarm_entity": None,
         },
         "vacation": {"label": "Vacances", "kind": KIND_HOLD},
         "off": {"label": "Désactivé", "kind": KIND_OFF},
@@ -332,6 +334,8 @@ _SCENARIO_FIELDS: dict[str, dict[str, Any]] = {
     KIND_GAIN: {
         "gain_room_below": _num(-30, 60),
         "gain_outdoor_below": _num(-30, 60),
+        "block_when_alarm": _bool,
+        "alarm_entity": _entity("alarm_control_panel"),
     },
     KIND_HOLD: {},
     KIND_OFF: {},

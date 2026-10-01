@@ -116,10 +116,17 @@ const I18N = {
     "mode.auto": "Automatique",
     "mode.manual": "Manuel",
     "mode.off": "Arrêt",
+    "mode.auto.desc": "Le moteur décide et envoie les ordres aux volets : fermeture et réouverture selon le scénario, l'exposition au soleil et les températures.",
+    "mode.manual.desc": "Aucun ordre n'est envoyé : vous pilotez les volets vous-même. Les volets affichent « Mode manuel » ; la sécurité vent reste prioritaire.",
+    "mode.off.desc": "Gestion arrêtée : aucune décision n'est prise ni aucun ordre envoyé. Seule la sécurité vent reste prioritaire.",
     "scenario.summer": "Été",
     "scenario.winter": "Hiver",
     "scenario.vacation": "Vacances",
     "scenario.off": "Désactivé",
+    "scenario.summer.desc": "Protection contre la chaleur : ferme les volets exposés au soleil quand il fait chaud, les rouvre quand la chaleur retombe.",
+    "scenario.winter.desc": "Gain solaire : rouvre un volet fermé et ensoleillé quand la pièce et l'extérieur sont frais. Ne ferme jamais.",
+    "scenario.vacation.desc": "Absence : ferme les volets dès qu'ils sont exposés au soleil, sans condition de température, et les remonte quand le soleil part.",
+    "scenario.off.desc": "Aucune action liée au soleil ni aux températures.",
     "kind.heat_protection": "Protection contre la chaleur",
     "kind.solar_gain": "Apport solaire",
     "kind.hold_shaded": "Maintien à l'ombre",
@@ -334,6 +341,10 @@ const I18N = {
     "scn.releaseHelp": "all : le volet ne se rouvre que lorsque l'extérieur ET la pièce sont redescendus sous leurs seuils de réouverture. any : il se rouvre dès que l'un des deux (extérieur OU pièce) est redescendu sous son seuil.",
     "scn.gainRoom": "Pièce : en dessous de (°C)",
     "scn.gainOutdoor": "Extérieur : en dessous de (°C)",
+    "scn.blockAlarm": "Ne pas ouvrir les volets quand l'alarme est activée",
+    "scn.blockAlarmHelp": "Le gain solaire est suspendu tant que l'alarme est armée (états armed_*) ou déclenchée.",
+    "scn.alarmEntity": "Entité alarme",
+    "scn.alarmEntityHelp": "alarm_control_panel à surveiller. Sans entité, ou si elle est indisponible, rien n'est bloqué.",
 
     "set.house": "Maison",
     "set.houseOrientation": "Orientation de la maison (°)",
@@ -503,10 +514,17 @@ const I18N = {
     "mode.auto": "Automatic",
     "mode.manual": "Manual",
     "mode.off": "Off",
+    "mode.auto.desc": "The engine decides and sends commands to the shutters: closing and reopening according to the scenario, sun exposure and temperatures.",
+    "mode.manual.desc": "No command is sent: you operate the shutters yourself. Shutters show Manual mode; wind safety still takes priority.",
+    "mode.off.desc": "Management stopped: no decision is made and no command is sent. Only the wind safety still takes priority.",
     "scenario.summer": "Summer",
     "scenario.winter": "Winter",
     "scenario.vacation": "Vacation",
     "scenario.off": "Disabled",
+    "scenario.summer.desc": "Heat protection: closes sun-exposed shutters when it is hot and reopens them when the heat drops.",
+    "scenario.winter.desc": "Solar gain: reopens a closed, sunny shutter when the room and the outdoors are cool. Never closes.",
+    "scenario.vacation.desc": "Away: closes shutters as soon as they are sun-exposed, with no temperature condition, and raises them when the sun leaves.",
+    "scenario.off.desc": "No action based on the sun or temperatures.",
     "kind.heat_protection": "Heat protection",
     "kind.solar_gain": "Solar gain",
     "kind.hold_shaded": "Stay shaded",
@@ -721,6 +739,10 @@ const I18N = {
     "scn.releaseHelp": "all: the shutter only reopens once BOTH the outdoor and the room temperatures are back under their reopening thresholds. any: it reopens as soon as either one (outdoor OR room) is back under its threshold.",
     "scn.gainRoom": "Room: below (°C)",
     "scn.gainOutdoor": "Outdoor: below (°C)",
+    "scn.blockAlarm": "Do not open shutters while the alarm is armed",
+    "scn.blockAlarmHelp": "Solar gain is suspended while the alarm is armed (armed_* states) or triggered.",
+    "scn.alarmEntity": "Alarm entity",
+    "scn.alarmEntityHelp": "alarm_control_panel to watch. With no entity, or if it is unavailable, nothing is blocked.",
 
     "set.house": "House",
     "set.houseOrientation": "House orientation (°)",
@@ -829,6 +851,7 @@ const DATALISTS = {
   sensor: ["sensor"],
   binary_sensor: ["binary_sensor"],
   weather: ["weather"],
+  alarm: ["alarm_control_panel"],
   exposure: ["binary_sensor", "input_boolean", "switch"],
 };
 
@@ -1440,10 +1463,12 @@ class VoletsIntelligentsPanel extends HTMLElement {
         el("span", { class: "lbl", text: this._t("dash.globalMode") }),
         this._segmented(MODE_IDS.map((m) => [m, this._t(`mode.${m}`)]), st.mode,
           (v) => this._command({ command: "set_mode", value: v }, "mode"), this._t("dash.globalMode"), busyAll)),
+      el("small", { class: "help", role: "note", text: MODE_IDS.includes(st.mode) ? this._t(`mode.${st.mode}.desc`) : "" }),
       el("div", { class: "lbl-row" },
         el("span", { class: "lbl", text: this._t("dash.scenario") }),
         this._segmented(scenarioOptions, st.scenario,
           (v) => this._command({ command: "set_scenario", value: v }, "scenario"), this._t("dash.scenario"), busyAll)),
+      el("small", { class: "help", role: "note", text: SCENARIO_IDS.includes(st.scenario) ? this._t(`scenario.${st.scenario}.desc`) : "" }),
       el("div", { class: "toolbar" },
         el("button", { class: "btn primary", type: "button", text: this._t("dash.evaluate"), disabled: busyAll,
           onclick: cmd({ command: "evaluate" }, "evaluate", this._t("dash.evaluateDone")) }),
@@ -2385,6 +2410,11 @@ class VoletsIntelligentsPanel extends HTMLElement {
       specific = el("div", { class: "fields" },
         temp("gain_room_below", this._t("scn.gainRoom")),
         temp("gain_outdoor_below", this._t("scn.gainOutdoor")));
+      specific = [specific,
+        this._toggle(sc, "block_when_alarm", this._t("scn.blockAlarm"), this._t("scn.blockAlarmHelp")),
+        this._field(this._t("scn.alarmEntity"),
+          this._text(sc, "alarm_entity", { list: "vi-dl-alarm", placeholder: "alarm_control_panel.…" }),
+          this._t("scn.alarmEntityHelp"))];
     } else {
       specific = el("p", { class: "muted small", text: this._t("scn.noThresholds") });
     }
@@ -2580,9 +2610,9 @@ class VoletsIntelligentsPanel extends HTMLElement {
       el("ul", { class: "vals" }, Object.keys(STATUS_COLORS).map((code) =>
         el("li", {}, el("code", { text: code }), ` : ${this._statusLabel(code)}`))),
       el("h3", { text: this._t("ent.valuesMode") }),
-      el("ul", { class: "vals" }, MODE_IDS.map((m) => el("li", {}, el("code", { text: m }), ` : ${this._t(`mode.${m}`)}`))),
+      el("ul", { class: "vals" }, MODE_IDS.map((m) => el("li", {}, el("code", { text: m }), ` : ${this._t(`mode.${m}`)} — ${this._t(`mode.${m}.desc`)}`))),
       el("h3", { text: this._t("ent.valuesScenario") }),
-      el("ul", { class: "vals" }, SCENARIO_IDS.map((k) => el("li", {}, el("code", { text: k }), ` : ${this._t(`scenario.${k}`)}`))),
+      el("ul", { class: "vals" }, SCENARIO_IDS.map((k) => el("li", {}, el("code", { text: k }), ` : ${this._t(`scenario.${k}`)} — ${this._t(`scenario.${k}.desc`)}`))),
       el("h3", { text: this._t("ent.attrs") }),
       el("ul", { class: "vals" }, attrNames.map((n) => el("li", {}, el("code", { text: n }), ` : ${this._t(`ent.attr.${n}`)}`))));
 
