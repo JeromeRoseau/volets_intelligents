@@ -74,6 +74,7 @@ def env(scenario="summer", **over):
     base = {
         "now": NOW,
         "mode": MODE_AUTO,
+        "scenario_key": scenario,
         "scenario": SCENARIOS[scenario],
         "in_window": True,
         "grace_active": False,
@@ -275,21 +276,21 @@ def test_vacation_shades_whenever_exposed_regardless_of_temperature():
 
 def test_winter_opens_for_solar_gain_only_when_cold():
     d = decide(
-        cover(),
+        cover(allow_open_closed_in=["winter"]),
         inputs(position=0, state="closed", room_temp=18),
         CoverRuntime(),
         env("winter", outdoor=8),
     )
     assert d.action == ACTION_OPEN
     d = decide(
-        cover(),
+        cover(allow_open_closed_in=["winter"]),
         inputs(position=0, state="closed", room_temp=22),
         CoverRuntime(),
         env("winter", outdoor=8),
     )
     assert d.action is None
     d = decide(
-        cover(),
+        cover(allow_open_closed_in=["winter"]),
         inputs(position=0, state="closed", room_temp=18, exposed=False),
         CoverRuntime(),
         env("winter", outdoor=8),
@@ -349,3 +350,74 @@ def test_winter_solar_gain_respects_cooldown():
         env("winter", outdoor=8),
     )
     assert (d.status, d.action) == (ST_COOLDOWN, None)
+
+
+# --- un volet fermé à 100 % n'est jamais remonté ----------------------------------
+
+
+def test_fully_closed_cover_is_not_reopened_at_end_of_window():
+    rt = CoverRuntime(shaded_by_us=True)
+    d = decide(cover(), inputs(position=0, state="closed"), rt, env(in_window=False))
+    assert d.action is None and d.forget
+    assert "100 %" in d.reason
+
+
+def test_fully_closed_cover_is_not_reopened_when_sun_leaves():
+    rt = CoverRuntime(shaded_by_us=True)
+    d = decide(cover(), inputs(position=0, state="closed", exposed=False), rt, env())
+    assert d.action is None and d.forget
+
+
+def test_partially_lowered_cover_is_still_reopened():
+    rt = CoverRuntime(shaded_by_us=True)
+    d = decide(cover(), inputs(position=10, exposed=False), rt, env())
+    assert d.action == ACTION_OPEN and not d.forget
+
+
+def test_cover_without_position_reported_closed_is_not_reopened():
+    rt = CoverRuntime(shaded_by_us=True)
+    d = decide(cover(), inputs(position=None, state="closed", exposed=False), rt, env())
+    assert d.action is None
+
+
+def test_winter_does_not_open_a_closed_cover_by_default():
+    d = decide(
+        cover(),
+        inputs(position=0, state="closed", room_temp=18),
+        CoverRuntime(),
+        env("winter", outdoor=8),
+    )
+    assert d.action is None and d.forget
+
+
+def test_option_allows_opening_a_closed_cover_in_chosen_scenario_only():
+    c = cover(allow_open_closed_in=["winter"])
+    closed = inputs(position=0, state="closed", room_temp=18)
+    assert decide(c, closed, CoverRuntime(), env("winter", outdoor=8)).action == ACTION_OPEN
+    rt = CoverRuntime(shaded_by_us=True)
+    assert decide(c, inputs(position=0, state="closed", exposed=False), rt, env()).action is None
+
+
+def test_cover_closed_fully_by_the_integration_is_reopened():
+    # Protection = fermeture totale : le volet fermé par l'intégration doit pouvoir remonter.
+    c = cover(close_method="close")
+    rt = CoverRuntime(shaded_by_us=True)
+    d = decide(c, inputs(position=0, state="closed", exposed=False), rt, env())
+    assert d.action == ACTION_OPEN
+    c = cover(close_position=0)
+    d = decide(c, inputs(position=0, state="closed", exposed=False), rt, env())
+    assert d.action == ACTION_OPEN
+    # mais un volet fermé à la main (sans notre drapeau) n'est pas touché
+    d = decide(
+        c,
+        inputs(position=0, state="closed", exposed=False),
+        CoverRuntime(),
+        env("winter", outdoor=8, in_window=True),
+    )
+    assert d.action is None
+
+
+def test_wind_does_not_reopen_a_closed_cover():
+    c = cover(wind_sensitive=True, wind_action="open")
+    d = decide(c, inputs(position=0, state="closed"), CoverRuntime(), env(wind_exceeded=True))
+    assert d.action is None and d.status == ST_WIND

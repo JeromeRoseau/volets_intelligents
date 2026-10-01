@@ -15,6 +15,7 @@ from typing import Any
 from .const import (
     ACTION_CLOSE,
     ACTION_OPEN,
+    CLOSE_FULL,
     KIND_GAIN,
     KIND_HEAT,
     KIND_HOLD,
@@ -69,6 +70,7 @@ class Env:
 
     now: datetime
     mode: str = MODE_AUTO
+    scenario_key: str = ""
     scenario: dict[str, Any] = field(default_factory=dict)
     in_window: bool = True
     grace_active: bool = False
@@ -86,6 +88,8 @@ class Decision:
     # Ordre « simple » (ouvrir/fermer complètement), sans position de protection :
     # utilisé pour la protection contre le vent.
     plain: bool = False
+    # L'intégration abandonne son rôle sur ce volet (elle ne le remontera plus).
+    forget: bool = False
 
 
 # --- aides --------------------------------------------------------------------
@@ -116,6 +120,20 @@ def is_lowered(cover: dict[str, Any], inp: CoverInputs, tolerance: int) -> bool:
     return inp.state == "closed"
 
 
+def is_fully_closed(inp: CoverInputs) -> bool:
+    """Le volet est-il fermé à 100 % (position 0, ou état « fermé » sans position) ?"""
+    if inp.position is not None:
+        return inp.position <= 0
+    return inp.state == "closed"
+
+
+def protection_is_full_close(cover: dict[str, Any]) -> bool:
+    """La protection de ce volet consiste-t-elle à le fermer complètement ?"""
+    return cover["close_method"] == CLOSE_FULL or (
+        cover["close_method"] == "position" and cover["close_position"] <= 0
+    )
+
+
 def is_open(cover: dict[str, Any], inp: CoverInputs, tolerance: int) -> bool:
     """Le volet est-il ouvert à la position d'ouverture voulue (ou plus haut) ?"""
     if inp.position is not None:
@@ -141,7 +159,29 @@ def _exposure_text(inp: CoverInputs) -> str:
 
 
 def decide(cover: dict[str, Any], inp: CoverInputs, rt: CoverRuntime, env: Env) -> Decision:
-    """Décide de l'action à mener pour un volet."""
+    """Décide de l'action à mener pour un volet, sans jamais remonter un volet fermé à 100 %.
+
+    Un volet fermé à 100 % n'est pas remonté, quelle que soit la façon dont il a été fermé,
+    sauf si le scénario actif figure dans `allow_open_closed_in` du volet. Exception : un volet
+    que l'intégration a elle-même fermé complètement (sa protection est la fermeture totale)
+    est bien remonté, sinon la protection ne se terminerait jamais.
+    """
+    decision = _decide(cover, inp, rt, env)
+    if (
+        decision.action == ACTION_OPEN
+        and is_fully_closed(inp)
+        and env.scenario_key not in cover.get("allow_open_closed_in", [])
+        and not (rt.shaded_by_us and protection_is_full_close(cover))
+    ):
+        return Decision(
+            decision.status,
+            "Volet fermé à 100 % : l'intégration ne le remonte pas",
+            forget=True,
+        )
+    return decision
+
+
+def _decide(cover: dict[str, Any], inp: CoverInputs, rt: CoverRuntime, env: Env) -> Decision:
     if not cover["enabled"]:
         return Decision(ST_DISABLED, "Ce volet n'est pas géré automatiquement")
     if not inp.available:

@@ -33,7 +33,14 @@ graphique** et une **carte Lovelace**. Aucun YAML à écrire.
 - **Scénarios** : Été (protection), Hiver (ouvre pour profiter du soleil quand la pièce est fraîche),
   Vacances (protège dès qu'il y a du soleil), Désactivé. Choix manuel ou automatique selon le mois.
 - **Sécurités** : délai après redémarrage, aucune action si la température extérieure ou le capteur
-  d'exposition est indisponible, jamais de réouverture d'un volet que vous avez fermé vous-même.
+  d'exposition est indisponible.
+- **Volet fermé à 100 %, jamais remonté** : un volet fermé à 100 % n'est pas remonté par l'intégration, quelle que
+  soit la façon dont il a été fermé (à la main, par une autre automatisation, par l'intégration elle-même). Option par
+  volet pour lever cette règle dans le ou les scénarios de votre choix (Été, Hiver, Vacances). Seule exception : un
+  volet dont la protection est la fermeture totale (méthode « fermer » ou position 0 %) et que l'intégration a fermé
+  est remonté, sinon sa protection ne se terminerait jamais. « Fermé à 100 % » veut dire position 0 % rapportée par le
+  volet, ou état « fermé » pour un volet sans position. La règle vaut aussi pour la protection contre le vent
+  (un volet fermé est déjà à l'abri).
 - **Transparence** : chaque volet affiche en français pourquoi il est dans son état.
 
 ## Installation
@@ -103,6 +110,35 @@ nom de votre volet.
 | `select.volets_mode` | select | `auto`, `manual`, `off` (affichés Automatique, Manuel, Arrêté) | Mode global. Modifiable depuis un tableau de bord. |
 | `select.volets_scenario` | select | `summer`, `winter`, `vacation`, `off` (affichés Été, Hiver, Vacances, Désactivé) | Scénario actif. Modifiable, sauf quand le scénario automatique selon le mois est activé. |
 | `sensor.volets_temperature_exterieure_effective` | sensor (°C) | nombre, ou indisponible | Température extérieure réellement utilisée par les règles (maximum entre la mesure et la température ressentie si l'option est activée). |
+
+### Plage active
+
+| Entité | Type | Usage |
+|---|---|---|
+| `binary_sensor.volets_plage_active` | binary_sensor | `on` quand l'heure courante est dans la plage active. |
+| `sensor.volets_plage_debut` | sensor (horodatage) | Début de la plage active du moment. |
+| `sensor.volets_plage_fin` | sensor (horodatage) | Fin de la plage active du moment (vide si la fin est indisponible). |
+| `time.volets_reglage_plage_debut` | time | **Réglage** de l'heure de début. Modifiable depuis un tableau de bord. |
+| `time.volets_reglage_plage_fin` | time | **Réglage** de l'heure de fin fixe (aussi utilisée en repli si l'entité de fin est indisponible). |
+| `select.volets_reglage_plage_mode_fin` | select | **Réglage** du mode de fin : `fixed` (heure fixe), `entity` (lue dans une entité), `sunset` (coucher du soleil). Le mode `entity` demande qu'une entité de fin soit déjà choisie dans le panneau, sinon le changement est refusé. |
+| `number.volets_reglage_plage_decalage_coucher` | number (min) | **Réglage** du décalage par rapport au coucher du soleil (de -240 à 240, utile en mode `sunset`). |
+
+L'entité qui fournit la fin de plage (par exemple `sensor.volets_heure_remontee`) se choisit dans le panneau
+(Réglages). Chaque modification faite par ces entités est enregistrée comme si elle venait du panneau.
+
+### Façades : exposition et horaires
+
+Une série d'entités par façade (Nord, Est, Sud, Ouest et vos façades ajoutées) :
+
+| Entité | Type | Usage |
+|---|---|---|
+| `binary_sensor.volets_facade_<nom>_exposee` | binary_sensor | `on` quand la façade reçoit le soleil (météo comprise), `off` sinon, inconnu si le capteur d'exposition est indisponible. Attributs : `facade`, `orientation`, `azimuth`, `source` (`sun` ou `entity`), `windows` (toutes les plages d'ensoleillement théoriques du jour). |
+| `sensor.volets_facade_<nom>_debut` | sensor (horodatage) | Début de la plage d'ensoleillement en cours, sinon de la prochaine du jour. Vide s'il n'y en a plus, ou en mode « capteur existant ». |
+| `sensor.volets_facade_<nom>_fin` | sensor (horodatage) | Fin de cette même plage. |
+
+Ces entités portent des noms différents de vos éventuels capteurs `binary_sensor.volets_exposition_*` : il n'y a
+aucun conflit. Les horaires sont des horaires théoriques (géométrie du soleil, sans météo ni obstacle) et se
+rafraîchissent à chaque évaluation (toutes les 5 minutes par défaut).
 
 ### Entités par volet
 
@@ -276,6 +312,7 @@ Aucun code n'a été copié.
   qui ne rapporte aucune position est géré en tout ou rien.
 - Avec le mode « bouton » (position favorite), la position atteinte peut différer de la position de
   protection réglée : l'intégration reconnaît quand même un volet qu'elle a abaissé et le remonte ensuite.
+- Si l'intégration abaisse un volet à 10 % et que vous le fermez ensuite complètement, elle l'abandonne : il reste fermé.
 - Un mouvement venant d'une autre automatisation (alarme, fermeture du soir) pendant la plage active
   est traité comme une action manuelle et met le volet en pause.
 

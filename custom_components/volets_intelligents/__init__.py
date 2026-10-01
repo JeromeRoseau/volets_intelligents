@@ -28,7 +28,7 @@ from .websocket_api import async_register_websocket_api
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = ["select", "sensor", "switch"]
+PLATFORMS = ["binary_sensor", "number", "select", "sensor", "switch", "time"]
 _FRONTEND_DIR = Path(__file__).parent / "frontend"
 _STATIC_KEY = f"{DOMAIN}_static_registered"
 

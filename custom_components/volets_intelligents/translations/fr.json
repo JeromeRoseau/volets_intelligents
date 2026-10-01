@@ -26,6 +26,13 @@
           "vacation": "Vacances",
           "off": "Désactivé"
         }
+      },
+      "window_end_mode": {
+        "state": {
+          "fixed": "Heure fixe",
+          "entity": "Lue dans une entité",
+          "sunset": "Coucher du soleil"
+        }
       }
     },
     "sensor": {

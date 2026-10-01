@@ -61,6 +61,27 @@ const I18N = {
     "ent.exReasons": "Pourquoi chaque volet est dans son état",
     "ent.windowRow": "Fenêtre",
     "ent.reasonRow": "Pourquoi",
+    "ent.window": "Plage active",
+    "ent.windowActive": "Plage active en ce moment",
+    "ent.windowStart": "Début de la plage (lecture)",
+    "ent.windowEnd": "Fin de la plage (lecture)",
+    "ent.windowStartSetting": "Réglage : heure de début",
+    "ent.windowEndSetting": "Réglage : heure de fin (fixe ou repli)",
+    "ent.windowEndMode": "Réglage : mode de fin",
+    "ent.windowSunset": "Réglage : décalage coucher du soleil (min)",
+    "ent.windowHelp": "Les entités « Réglage » sont modifiables depuis un tableau de bord. L'entité qui donne la fin de plage se choisit dans le panneau (Réglages).",
+    "ent.endMode.fixed": "Heure fixe",
+    "ent.endMode.entity": "Lue dans une entité",
+    "ent.endMode.sunset": "Coucher du soleil",
+    "ent.facades": "Façades : exposition et horaires",
+    "ent.facadeExposed": "Exposée au soleil",
+    "ent.facadeStart": "Début de la plage d'ensoleillement",
+    "ent.facadeEnd": "Fin de la plage d'ensoleillement",
+    "ent.facadeHelp": "Début et fin concernent la plage d'ensoleillement en cours, sinon la prochaine du jour (vide quand il n'y en a plus). Toutes les plages du jour sont dans l'attribut windows.",
+    "ent.exWindow": "Plage active (lecture et réglage)",
+    "ent.exFacades": "Façades : exposition et horaires",
+    "ent.on": "oui",
+    "ent.off": "non",
 
     "common.retry": "Réessayer",
     "common.add": "Ajouter",
@@ -235,6 +256,8 @@ const I18N = {
     "covers.windowSensor": "capteur d'ouverture",
     "covers.addWindow": "Ajouter : {label}",
     "covers.blockClose": "Ne pas fermer si une fenêtre est ouverte",
+    "covers.allowOpenClosed": "Autoriser à remonter un volet fermé à 100 %",
+    "covers.allowOpenClosedHelp": "Par défaut, un volet fermé à 100 % n'est jamais remonté par l'intégration, quelle que soit la façon dont il a été fermé. Activez un scénario pour lever cette règle dans ce scénario seulement.",
     "covers.windSensitive": "Sensible au vent (mise en sécurité si vent fort)",
     "covers.windAction": "Action de mise en sécurité par vent fort",
     "covers.windActionHelp": "Ce que fait cet équipement quand le vent dépasse le seuil : un volet se remonte, un store ou une banne se rentre.",
@@ -415,6 +438,27 @@ const I18N = {
     "ent.exReasons": "Why each shutter is in its state",
     "ent.windowRow": "Window",
     "ent.reasonRow": "Why",
+    "ent.window": "Active window",
+    "ent.windowActive": "Active window right now",
+    "ent.windowStart": "Window start (read-only)",
+    "ent.windowEnd": "Window end (read-only)",
+    "ent.windowStartSetting": "Setting: start time",
+    "ent.windowEndSetting": "Setting: end time (fixed or fallback)",
+    "ent.windowEndMode": "Setting: end mode",
+    "ent.windowSunset": "Setting: sunset offset (min)",
+    "ent.windowHelp": "The \"Setting\" entities can be changed from a dashboard. The entity that provides the end of the window is chosen in the panel (Settings).",
+    "ent.endMode.fixed": "Fixed time",
+    "ent.endMode.entity": "Read from an entity",
+    "ent.endMode.sunset": "Sunset",
+    "ent.facades": "Facades: exposure and times",
+    "ent.facadeExposed": "Exposed to the sun",
+    "ent.facadeStart": "Start of the sunlight window",
+    "ent.facadeEnd": "End of the sunlight window",
+    "ent.facadeHelp": "Start and end are for the current sunlight window, otherwise the next one of the day (empty when none is left). All the day's windows are in the windows attribute.",
+    "ent.exWindow": "Active window (read and adjust)",
+    "ent.exFacades": "Facades: exposure and times",
+    "ent.on": "yes",
+    "ent.off": "no",
 
     "common.retry": "Retry",
     "common.add": "Add",
@@ -589,6 +633,8 @@ const I18N = {
     "covers.windowSensor": "opening sensor",
     "covers.addWindow": "Add: {label}",
     "covers.blockClose": "Do not close if a window is open",
+    "covers.allowOpenClosed": "Allow raising a shutter that is 100% closed",
+    "covers.allowOpenClosedHelp": "By default, a shutter that is 100% closed is never raised by the integration, however it was closed. Turn on a scenario to lift this rule for that scenario only.",
     "covers.windSensitive": "Wind sensitive (safety move in strong wind)",
     "covers.windAction": "Safety action in strong wind",
     "covers.windActionHelp": "What this device does when the wind exceeds the threshold: a shutter is raised, an awning or blind is retracted.",
@@ -1890,6 +1936,7 @@ class VoletsIntelligentsPanel extends HTMLElement {
       close_method: "position", close_position: facade ? facade.default_close_position : 10,
       button_entity: null, open_position: 100, room_temp_entity: null,
       window_entities: [], block_close_if_open: true, wind_sensitive: false, wind_action: "open",
+      allow_open_closed_in: [],
     };
   }
 
@@ -1960,6 +2007,7 @@ class VoletsIntelligentsPanel extends HTMLElement {
   _coverCard(cover, index) {
     const covers = this._draft.covers;
     if (!Array.isArray(cover.window_entities)) cover.window_entities = [];
+    if (!Array.isArray(cover.allow_open_closed_in)) cover.allow_open_closed_in = [];
     const facadeName = () => {
       const f = this._draft.facades.find((x) => x.id === cover.facade);
       return f ? f.name : cover.facade;
@@ -2034,6 +2082,7 @@ class VoletsIntelligentsPanel extends HTMLElement {
             this._entityChips(cover.window_entities, { list: "vi-dl-binary_sensor", placeholder: "binary_sensor.…", label: this._t("covers.windowSensor") }),
             null, true),
           this._toggle(cover, "block_close_if_open", this._t("covers.blockClose")),
+          this._field(this._t("covers.allowOpenClosed"), this._scenarioToggles(cover), this._t("covers.allowOpenClosedHelp"), true),
           windToggle, windActionField)));
     card.addEventListener("toggle", () => {
       if (card.open) this._openCards.add(cover); else this._openCards.delete(cover);
@@ -2042,6 +2091,25 @@ class VoletsIntelligentsPanel extends HTMLElement {
     syncMethod();
     syncWind();
     return card;
+  }
+
+  /** Un bouton par scénario : actif = l'ouverture d'un volet fermé à 100 % est permise dans ce scénario. */
+  _scenarioToggles(cover) {
+    const keys = ["summer", "winter", "vacation"];
+    return el("div", { class: "chips" }, keys.map((key) => {
+      const conf = this._draft.scenarios && this._draft.scenarios[key];
+      const label = (conf && conf.label) || this._t(`scenario.${key}`);
+      const btn = el("button", { class: "chip-toggle", type: "button", text: label,
+        "aria-pressed": String(cover.allow_open_closed_in.includes(key)) });
+      btn.addEventListener("click", () => {
+        const list = cover.allow_open_closed_in;
+        const i = list.indexOf(key);
+        if (i >= 0) list.splice(i, 1); else list.push(key);
+        btn.setAttribute("aria-pressed", String(i < 0));
+        this._touch();
+      });
+      return btn;
+    }));
   }
 
   _moveCover(index, delta) {
@@ -2394,6 +2462,11 @@ class VoletsIntelligentsPanel extends HTMLElement {
     if (kind === "scenario" && SCENARIO_IDS.includes(v)) return this._t(`scenario.${v}`);
     if (kind === "switch") return v === "on" ? "on" : "off";
     if (kind === "temp") return this._num(Number(v), "°C");
+    if (kind === "bool") return v === "on" ? this._t("ent.on") : this._t("ent.off");
+    if (kind === "ts") return this._time(v);
+    if (kind === "time") return String(v).slice(0, 5);
+    if (kind === "endmode") return ["fixed", "entity", "sunset"].includes(v) ? this._t(`ent.endMode.${v}`) : v;
+    if (kind === "minutes") return `${v} min`;
     return v;
   }
 
@@ -2444,6 +2517,28 @@ class VoletsIntelligentsPanel extends HTMLElement {
           this._entityRow(this._t("ent.status"), c.status, "status")))))
         : el("p", { class: "muted", text: this._t("ent.noCovers") }));
 
+    const w = map.window || {};
+    const windowCard = el("section", { class: "card" },
+      el("h2", { text: this._t("ent.window") }),
+      this._entityRow(this._t("ent.windowActive"), w.active, "bool"),
+      this._entityRow(this._t("ent.windowStart"), w.start, "ts"),
+      this._entityRow(this._t("ent.windowEnd"), w.end, "ts"),
+      this._entityRow(this._t("ent.windowStartSetting"), w.start_setting, "time"),
+      this._entityRow(this._t("ent.windowEndSetting"), w.end_setting, "time"),
+      this._entityRow(this._t("ent.windowEndMode"), w.end_mode, "endmode"),
+      this._entityRow(this._t("ent.windowSunset"), w.sunset_offset, "minutes"),
+      el("p", { class: "small muted", text: this._t("ent.windowHelp") }));
+
+    const facadeList = map.facades || [];
+    const facadesCard = el("section", { class: "card" },
+      el("h2", { text: this._t("ent.facades") }),
+      el("p", { class: "small muted", text: this._t("ent.facadeHelp") }),
+      facadeList.map((f) => el("div", { class: "ent-cover" },
+        el("strong", { text: f.name || f.id }),
+        this._entityRow(this._t("ent.facadeExposed"), f.exposed, "bool"),
+        this._entityRow(this._t("ent.facadeStart"), f.start, "ts"),
+        this._entityRow(this._t("ent.facadeEnd"), f.end, "ts"))));
+
     const attrNames = ["reason", "cover", "position", "room_temp", "exposed", "paused_until",
       "shaded_by_us", "last_action", "last_action_at", "window_state"];
     const values = el("section", { class: "card" },
@@ -2489,13 +2584,30 @@ class VoletsIntelligentsPanel extends HTMLElement {
       reasonLines.push(`  **${(c.name || c.cover).replace(/[*_`]/g, "")}** : {{ state_attr('${c.status}', 'reason') }}`);
     });
 
+    const windowYaml = ["type: entities", `title: ${q(this._t("ent.window"))}`, "entities:"];
+    [[w.active, "ent.windowActive"], [w.start, "ent.windowStart"], [w.end, "ent.windowEnd"],
+      [w.start_setting, "ent.windowStartSetting"], [w.end_setting, "ent.windowEndSetting"],
+      [w.end_mode, "ent.windowEndMode"], [w.sunset_offset, "ent.windowSunset"]].forEach(([id, key]) => {
+      if (id) windowYaml.push(`  - entity: ${id}`, `    name: ${q(this._t(key))}`);
+    });
+
+    const facadeYaml = ["type: entities", `title: ${q(this._t("ent.facades"))}`, "entities:"];
+    facadeList.forEach((f) => {
+      const label = f.name || f.id;
+      [[f.exposed, "ent.facadeExposed"], [f.start, "ent.facadeStart"], [f.end, "ent.facadeEnd"]].forEach(([id, key]) => {
+        if (id) facadeYaml.push(`  - entity: ${id}`, `    name: ${q(`${label} : ${this._t(key).toLowerCase()}`)}`);
+      });
+    });
+
     const examples = el("section", { class: "card" },
       el("h2", { text: this._t("ent.examples") }),
       this._yamlBlock(this._t("ent.exGlobal"), globalYaml.join("\n")),
+      this._yamlBlock(this._t("ent.exWindow"), windowYaml.join("\n")),
+      facadeList.length ? this._yamlBlock(this._t("ent.exFacades"), facadeYaml.join("\n")) : null,
       covers.length ? this._yamlBlock(this._t("ent.exCovers"), coverYaml.join("\n")) : null,
       covers.some((c) => c.status) ? this._yamlBlock(this._t("ent.exReasons"), reasonLines.join("\n")) : null);
 
-    return [el("p", { class: "muted", text: this._t("ent.intro") }), globals, perCover, examples, values];
+    return [el("p", { class: "muted", text: this._t("ent.intro") }), globals, windowCard, facadesCard, perCover, examples, values];
   }
 
   _settingsView() {

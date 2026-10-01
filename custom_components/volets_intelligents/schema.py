@@ -119,6 +119,7 @@ DEFAULT_COVER: dict[str, Any] = {
     "block_close_if_open": True,
     "wind_sensitive": False,
     "wind_action": "open",
+    "allow_open_closed_in": [],
 }
 
 
@@ -315,6 +316,7 @@ _COVER = vol.Schema(
         vol.Required("block_close_if_open"): _bool,
         vol.Required("wind_sensitive"): _bool,
         vol.Required("wind_action"): vol.In(("open", "close")),
+        vol.Required("allow_open_closed_in"): _list_of(vol.In(("summer", "winter", "vacation", "off"))),
     },
     extra=vol.REMOVE_EXTRA,
 )

@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.3.5
+
+- un volet fermé à 100 % (position 0 %, ou état « fermé » sans position) n'est plus jamais remonté par
+  l'intégration, quelle que soit la façon dont il a été fermé (fin de plage, soleil parti, scénario Hiver,
+  protection contre le vent) ;
+- option par volet `allow_open_closed_in` (boutons Été, Hiver, Vacances dans l'onglet Volets) pour lever cette règle
+  dans les scénarios choisis ;
+- exception : un volet dont la protection est la fermeture totale et que l'intégration a fermé reste remontable ;
+- un volet fermé à 100 % que l'intégration avait abaissé est « oublié » : elle ne s'en occupe plus.
+
+## 0.3.4
+
+Nouvelles entités :
+
+- plage active : `binary_sensor.volets_plage_active`, `sensor.volets_plage_debut` et `sensor.volets_plage_fin` ;
+- réglages de la plage active modifiables depuis un tableau de bord : `time.volets_reglage_plage_debut`,
+  `time.volets_reglage_plage_fin`, `select.volets_reglage_plage_mode_fin` et
+  `number.volets_reglage_plage_decalage_coucher` ;
+- par façade : `binary_sensor.volets_facade_<nom>_exposee`, `sensor.volets_facade_<nom>_debut` et
+  `sensor.volets_facade_<nom>_fin` (créées et supprimées avec les façades) ;
+- l'onglet « Entités » du panneau les liste, avec leurs états et des exemples YAML à jour.
+
 ## 0.3.3
 
 - nouvel onglet « Entités » dans le panneau : identifiants réels des entités (boutons « Copier »),

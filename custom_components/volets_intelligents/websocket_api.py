@@ -113,6 +113,25 @@ def ws_get_entities(hass: HomeAssistant, connection, msg: dict[str, Any]) -> Non
             "mode": find("select", "mode"),
             "scenario": find("select", "scenario"),
             "outdoor": find("sensor", "outdoor_effective"),
+            "window": {
+                "active": find("binary_sensor", "window_active"),
+                "start": find("sensor", "window_start_at"),
+                "end": find("sensor", "window_end_at"),
+                "start_setting": find("time", "window_start"),
+                "end_setting": find("time", "window_end_time"),
+                "end_mode": find("select", "window_end_mode"),
+                "sunset_offset": find("number", "window_sunset_offset"),
+            },
+            "facades": [
+                {
+                    "id": facade["id"],
+                    "name": facade["name"],
+                    "exposed": find("binary_sensor", f"facade_{facade['id']}_exposed"),
+                    "start": find("sensor", f"facade_{facade['id']}_start"),
+                    "end": find("sensor", f"facade_{facade['id']}_end"),
+                }
+                for facade in manager.config["facades"]
+            ],
             "covers": [
                 {
                     "cover": cover["entity_id"],

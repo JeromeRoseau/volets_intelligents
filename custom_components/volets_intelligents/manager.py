@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import copy
 import logging
 import re
 from collections.abc import Callable
@@ -387,6 +388,16 @@ class VoletsManager:
             self._windows_key = key
         return self._windows_cache
 
+    @staticmethod
+    def _next_window(now: datetime, windows: list[dict[str, str]]) -> dict[str, str | None]:
+        """Plage d'ensoleillement en cours, sinon la prochaine du jour (ISO), sinon rien."""
+        for window in windows:
+            start = datetime.combine(now.date(), _parse_hhmm(window["start"]), tzinfo=now.tzinfo)
+            end = datetime.combine(now.date(), _parse_hhmm(window["end"]), tzinfo=now.tzinfo)
+            if now < end:
+                return {"next_start": start.isoformat(), "next_end": end.isoformat()}
+        return {"next_start": None, "next_end": None}
+
     def _time_from_entity(self, entity_id: str | None) -> time | None:
         """Heure lue dans un état « HH:MM », « HH:MM:SS[.ffffff][±HH:MM] » ou datetime ISO."""
         if not entity_id:
@@ -463,6 +474,7 @@ class VoletsManager:
         env = Env(
             now=now,
             mode=self.mode,
+            scenario_key=scenario_key,
             scenario=scenario,
             in_window=in_window,
             grace_active=grace,
@@ -488,6 +500,7 @@ class VoletsManager:
                 "source": facade["exposure"]["mode"],
                 "azimuth": round(self.facade_azimuth(facade), 1),
                 "windows": windows.get(facade["id"], []),
+                **self._next_window(now, windows.get(facade["id"], [])),
             }
 
         covers_status: list[dict[str, Any]] = []
@@ -498,6 +511,8 @@ class VoletsManager:
             raw_exposed = raw_exposure[facade["id"]] if facade else False
             inp = self._cover_inputs(cover, facade, raw_exposed, sunny)
             decision = decide(cover, inp, rt, env)
+            if decision.forget:
+                rt.shaded_by_us = False
             if decision.action and not self._already_sent(rt, decision.action, now):
                 await self._execute(cover, decision, rt, now)
             covers_status.append(self._cover_status(cover, inp, rt, decision))
@@ -511,6 +526,8 @@ class VoletsManager:
             "in_window": in_window,
             "window_start": start_dt.strftime("%H:%M"),
             "window_end": end_dt.strftime("%H:%M") if end_dt else None,
+            "window_start_at": _iso(start_dt),
+            "window_end_at": _iso(end_dt),
             "grace_active": grace,
             "outdoor_temp": outdoor_raw,
             "outdoor_effective": outdoor,
@@ -723,6 +740,15 @@ class VoletsManager:
         async_dispatcher_send(self.hass, SIGNAL_CONFIG_CHANGED)
         await self.async_evaluate()
         return config
+
+    async def async_set_window_setting(self, key: str, value: Any) -> None:
+        """Modifie un réglage de la plage active (start, end_time, end_mode, sunset_offset_minutes)."""
+        config = copy.deepcopy(self.config)
+        config["settings"]["window"][key] = value
+        try:
+            await self.async_set_config(config)
+        except ConfigError as err:
+            raise HomeAssistantError(str(err)) from err
 
     async def async_set_cover_enabled(self, entity_id: str, enabled: bool) -> None:
         config = {**self.config, "covers": [dict(c) for c in self.config["covers"]]}

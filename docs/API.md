@@ -81,7 +81,8 @@ Stockée dans `.storage/volets_intelligents.config`. Envoyée/reçue en entier p
       "window_entities": [],            // binary_sensor.* (fenêtre/porte ouverte). Un capteur indisponible compte comme OUVERT (sécurité)
       "block_close_if_open": true,      // ne jamais fermer si une fenêtre/porte est ouverte
       "wind_sensitive": false,          // mise en sécurité si vent fort (prioritaire sur le mode, le scénario, la pause et le délai de démarrage ; seul enabled=false y échappe)
-      "wind_action": "open"             // "open" (volet remonté) | "close" (store/banne rentré) ; ordres simples open_cover/close_cover
+      "wind_action": "open",            // "open" (volet remonté) | "close" (store/banne rentré) ; ordres simples open_cover/close_cover,
+      "allow_open_closed_in": []        // scénarios (summer|winter|vacation) où l'intégration PEUT remonter ce volet quand il est fermé à 100 % (position 0, ou état closed sans position). Vide = jamais. Exception : si la protection est la fermeture totale (close_method "close" ou close_position 0) et que l'intégration a fermé le volet, il est remonté.
     }
   ]
 }
@@ -99,6 +100,8 @@ Stockée dans `.storage/volets_intelligents.config`. Envoyée/reçue en entier p
   "in_window": true,
   "window_start": "08:00",
   "window_end": "18:40",       // "HH:MM" ou null
+  "window_start_at": "2026-09-30T08:00:00+02:00",  // ISO, début de la plage du moment
+  "window_end_at": "2026-09-30T18:40:00+02:00",    // ISO ou null
   "grace_active": false,
   "outdoor_temp": 26.1,        // mesure brute ou null
   "outdoor_effective": 27.4,   // valeur utilisée ou null
@@ -114,6 +117,8 @@ Stockée dans `.storage/volets_intelligents.config`. Envoyée/reçue en entier p
       "exposed": true,         // exposée maintenant (météo comprise) ; null = capteur d'exposition indisponible (aucune action)
       "source": "sun",         // "sun" | "entity"
       "azimuth": 90.0,         // azimut effectif de la façade, orientation de la maison comprise
+      "next_start": "2026-09-30T08:10:00+02:00",  // plage d'ensoleillement en cours, sinon la prochaine du jour (ISO) ; null s'il n'y en a plus
+      "next_end": "2026-09-30T12:30:00+02:00",
       "windows": [ { "start": "08:10", "end": "12:30" } ]  // plages d'ensoleillement THÉORIQUES du jour (géométrie seule, sans météo), 0, 1 ou 2 plages
     }
   },
@@ -169,7 +174,7 @@ no_data/unavailable = rouge, le reste = gris.
 |---|---|---|---|
 | `volets_intelligents/get_config` | admin | — | `{ "config": <config>, "defaults": <config par défaut> }` |
 | `volets_intelligents/set_config` | admin | `{ "config": <config> }` | `{ "config": <config normalisée> }` ; erreur `code="invalid_config"` avec `message` en français |
-| `volets_intelligents/get_entities` | admin | — | `{ "mode", "scenario", "outdoor", "covers": [ { "cover", "name", "facade", "switch", "status" } ] }` : identifiants réels des entités (null si absente) |
+| `volets_intelligents/get_entities` | admin | — | `{ "mode", "scenario", "outdoor", "window": { "active", "start", "end", "start_setting", "end_setting", "end_mode", "sunset_offset" }, "facades": [ { "id", "name", "exposed", "start", "end" } ], "covers": [ { "cover", "name", "facade", "switch", "status" } ] }` : identifiants réels des entités (null si absente) |
 | `volets_intelligents/get_status` | utilisateur | — | `{ "status": <status> }` |
 | `volets_intelligents/subscribe_status` | utilisateur | — | abonnement : un événement `<status>` à chaque évaluation (+ un initial) |
 | `volets_intelligents/command` | utilisateur | `{ "command": ..., ... }` | `{ "ok": true }` |

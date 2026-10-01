@@ -343,3 +343,37 @@ async def test_status_sensor_exposes_window_state_attribute(hass, setup):
     await manager.async_evaluate()
     await hass.async_block_till_done()
     assert hass.states.get(STATUS).attributes["window_state"] == "open"
+
+
+# --- volet fermé à 100 % : jamais remonté --------------------------------------------
+
+
+async def test_closed_cover_is_not_opened_and_flag_is_cleared(hass, setup):
+    manager, calls, opens, _ = setup
+    hass.states.async_set("binary_sensor.expo_est", "off")
+    state(hass, 0, "closed")
+    manager._rt(COVER).shaded_by_us = True  # noqa: SLF001
+    await manager.async_evaluate()
+    assert not opens and not calls
+    assert manager._rt(COVER).shaded_by_us is False  # noqa: SLF001
+    assert "100 %" in hass.states.get(STATUS).attributes["reason"]
+
+
+async def test_lowered_cover_is_still_opened_when_sun_leaves(hass, setup):
+    manager, _, opens, _ = setup
+    hass.states.async_set("binary_sensor.expo_est", "off")
+    state(hass, 10)
+    manager._rt(COVER).shaded_by_us = True  # noqa: SLF001
+    await manager.async_evaluate()
+    assert len(opens) == 1
+
+
+def test_allow_open_closed_in_defaults_and_validation():
+    cfg = default_config()
+    cfg["covers"] = [{"entity_id": "cover.a", "facade": "sud"}]
+    assert normalize_config(cfg)["covers"][0]["allow_open_closed_in"] == []
+    cfg["covers"][0]["allow_open_closed_in"] = ["winter"]
+    assert normalize_config(cfg)["covers"][0]["allow_open_closed_in"] == ["winter"]
+    cfg["covers"][0]["allow_open_closed_in"] = ["printemps"]
+    with pytest.raises(ConfigError):
+        normalize_config(cfg)

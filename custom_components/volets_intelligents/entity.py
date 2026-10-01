@@ -95,3 +95,63 @@ def async_setup_dynamic_covers(
 
     sync()
     return async_dispatcher_connect(hass, SIGNAL_CONFIG_CHANGED, sync)
+
+
+class FacadeEntity(VoletsEntity):
+    """Entité liée à une façade (identifiée par son id)."""
+
+    def __init__(self, manager: VoletsManager, entry_id: str, facade_id: str) -> None:
+        super().__init__(manager, entry_id)
+        self.facade_id = facade_id
+
+    def facade_config(self) -> dict[str, Any] | None:
+        for facade in self.manager.config["facades"]:
+            if facade["id"] == self.facade_id:
+                return facade
+        return None
+
+    def facade_status(self) -> dict[str, Any] | None:
+        return self.manager.status.get("facades", {}).get(self.facade_id)
+
+    @property
+    def available(self) -> bool:
+        return self.facade_config() is not None
+
+    @property
+    def facade_name(self) -> str:
+        facade = self.facade_config()
+        return facade["name"] if facade else self.facade_id
+
+
+@callback
+def async_setup_dynamic_facades(
+    hass: HomeAssistant,
+    manager: VoletsManager,
+    entry_id: str,
+    platform_domain: str,
+    unique_suffix: str,
+    factory: Callable[[VoletsManager, str, str], Entity],
+    async_add_entities: Callable[[list[Entity]], None],
+) -> Callable[[], None]:
+    """Crée une entité par façade et suit les ajouts/suppressions de façades."""
+    known: set[str] = set()
+
+    @callback
+    def sync() -> None:
+        wanted = {f["id"] for f in manager.config["facades"]}
+        new = sorted(wanted - known)
+        if new:
+            async_add_entities([factory(manager, entry_id, facade_id) for facade_id in new])
+            known.update(new)
+        removed = known - wanted
+        if removed:
+            registry = er.async_get(hass)
+            for facade_id in removed:
+                unique_id = f"{entry_id}_facade_{facade_id}_{unique_suffix}"
+                entity_id = registry.async_get_entity_id(platform_domain, DOMAIN, unique_id)
+                if entity_id:
+                    registry.async_remove(entity_id)
+            known.difference_update(removed)
+
+    sync()
+    return async_dispatcher_connect(hass, SIGNAL_CONFIG_CHANGED, sync)

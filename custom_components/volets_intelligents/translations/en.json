@@ -26,6 +26,13 @@
           "vacation": "Vacation",
           "off": "Disabled"
         }
+      },
+      "window_end_mode": {
+        "state": {
+          "fixed": "Fixed time",
+          "entity": "Read from an entity",
+          "sunset": "Sunset"
+        }
       }
     },
     "sensor": {

@@ -18,7 +18,11 @@ async def async_setup_entry(
 ) -> None:
     manager: VoletsManager = entry.runtime_data
     async_add_entities(
-        [ModeSelect(manager, entry.entry_id), ScenarioSelect(manager, entry.entry_id)]
+        [
+            ModeSelect(manager, entry.entry_id),
+            ScenarioSelect(manager, entry.entry_id),
+            WindowEndModeSelect(manager, entry.entry_id),
+        ]
     )
 
 
@@ -60,3 +64,23 @@ class ScenarioSelect(VoletsEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         await self.manager.async_set_scenario(option)
+
+
+class WindowEndModeSelect(VoletsEntity, SelectEntity):
+    """Comment la fin de la plage active est déterminée (heure fixe, entité ou coucher du soleil)."""
+
+    _attr_translation_key = "window_end_mode"
+    _attr_options = ["fixed", "entity", "sunset"]
+    _attr_icon = "mdi:clock-end"
+    _attr_name = "Volets réglage plage mode fin"
+
+    def __init__(self, manager: VoletsManager, entry_id: str) -> None:
+        super().__init__(manager, entry_id)
+        self._attr_unique_id = f"{entry_id}_window_end_mode"
+
+    @property
+    def current_option(self) -> str:
+        return self.manager.config["settings"]["window"]["end_mode"]
+
+    async def async_select_option(self, option: str) -> None:
+        await self.manager.async_set_window_setting("end_mode", option)
