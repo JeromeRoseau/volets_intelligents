@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.3
+
+- nouvel onglet « Entités » dans le panneau : identifiants réels des entités (boutons « Copier »),
+  valeurs possibles, attributs et exemples de cartes YAML remplis avec vos identifiants ;
+- le capteur de statut de chaque volet expose l'attribut `window_state` (`open`, `closed`, `unknown`) ;
+- nouvelle commande WebSocket `volets_intelligents/get_entities` (administrateur).
+
 ## 0.3.2
 
 Publication de la 0.3.1 sous un nouveau numéro : le navigateur recharge le panneau et la carte

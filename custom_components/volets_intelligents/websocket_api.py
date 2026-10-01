@@ -54,6 +54,7 @@ def _check_control(connection, entity_ids: list[str | None]) -> None:
 def async_register_websocket_api(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, ws_get_config)
     websocket_api.async_register_command(hass, ws_set_config)
+    websocket_api.async_register_command(hass, ws_get_entities)
     websocket_api.async_register_command(hass, ws_get_status)
     websocket_api.async_register_command(hass, ws_subscribe_status)
     websocket_api.async_register_command(hass, ws_command)
@@ -83,6 +84,47 @@ async def ws_set_config(hass: HomeAssistant, connection, msg: dict[str, Any]) ->
         connection.send_error(msg["id"], "invalid_config", str(err))
         return
     connection.send_result(msg["id"], {"config": config})
+
+
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/get_entities"})
+@websocket_api.require_admin
+@callback
+def ws_get_entities(hass: HomeAssistant, connection, msg: dict[str, Any]) -> None:
+    """Identifiants réels des entités créées (d'après leur unique_id, donc même renommées)."""
+    manager = _require_manager(hass, connection, msg["id"])
+    if not manager:
+        return
+    entry_id = next(
+        (
+            entry.entry_id
+            for entry in hass.config_entries.async_entries(DOMAIN)
+            if getattr(entry, "runtime_data", None) is manager
+        ),
+        None,
+    )
+    registry = er.async_get(hass)
+
+    def find(domain: str, unique_id: str) -> str | None:
+        return registry.async_get_entity_id(domain, DOMAIN, f"{entry_id}_{unique_id}")
+
+    connection.send_result(
+        msg["id"],
+        {
+            "mode": find("select", "mode"),
+            "scenario": find("select", "scenario"),
+            "outdoor": find("sensor", "outdoor_effective"),
+            "covers": [
+                {
+                    "cover": cover["entity_id"],
+                    "name": cover["name"],
+                    "facade": cover["facade"],
+                    "switch": find("switch", f"{cover['entity_id']}_auto"),
+                    "status": find("sensor", f"{cover['entity_id']}_status"),
+                }
+                for cover in manager.config["covers"]
+            ],
+        },
+    )
 
 
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/get_status"})

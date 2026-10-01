@@ -169,6 +169,7 @@ no_data/unavailable = rouge, le reste = gris.
 |---|---|---|---|
 | `volets_intelligents/get_config` | admin | — | `{ "config": <config>, "defaults": <config par défaut> }` |
 | `volets_intelligents/set_config` | admin | `{ "config": <config> }` | `{ "config": <config normalisée> }` ; erreur `code="invalid_config"` avec `message` en français |
+| `volets_intelligents/get_entities` | admin | — | `{ "mode", "scenario", "outdoor", "covers": [ { "cover", "name", "facade", "switch", "status" } ] }` : identifiants réels des entités (null si absente) |
 | `volets_intelligents/get_status` | utilisateur | — | `{ "status": <status> }` |
 | `volets_intelligents/subscribe_status` | utilisateur | — | abonnement : un événement `<status>` à chaque évaluation (+ un initial) |
 | `volets_intelligents/command` | utilisateur | `{ "command": ..., ... }` | `{ "ok": true }` |

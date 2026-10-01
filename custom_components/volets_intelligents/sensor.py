@@ -80,4 +80,5 @@ class CoverStatusSensor(ManagedCoverEntity, SensorEntity):
             "shaded_by_us": status.get("shaded_by_us"),
             "last_action": status.get("last_action"),
             "last_action_at": status.get("last_action_at"),
+            "window_state": status.get("window_state"),
         }

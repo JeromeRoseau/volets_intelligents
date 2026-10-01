@@ -23,6 +23,44 @@ const I18N = {
     "tab.facades": "Façades",
     "tab.scenarios": "Scénarios",
     "tab.settings": "Réglages",
+    "tab.entities": "Entités",
+    "ent.intro": "Les identifiants réels des entités créées par l'intégration, à utiliser dans vos tableaux de bord, automatisations et modèles.",
+    "ent.loading": "Chargement des entités…",
+    "ent.error": "Impossible de lire les entités : {error}",
+    "ent.global": "Entités globales",
+    "ent.mode": "Mode global",
+    "ent.scenario": "Scénario actif",
+    "ent.outdoor": "Température extérieure utilisée",
+    "ent.perCover": "Entités par volet",
+    "ent.switch": "Gestion automatique",
+    "ent.status": "Statut",
+    "ent.missing": "non créée",
+    "ent.noCovers": "Aucun volet configuré : aucune entité par volet.",
+    "ent.copy": "Copier",
+    "ent.copied": "Copié dans le presse-papiers.",
+    "ent.copyFailed": "Copie automatique impossible : sélectionnez le texte et copiez-le manuellement.",
+    "ent.copyId": "Copier l'identifiant {id}",
+    "ent.values": "Valeurs possibles",
+    "ent.valuesStatus": "Statut d'un volet",
+    "ent.valuesMode": "Mode global",
+    "ent.valuesScenario": "Scénario",
+    "ent.attrs": "Attributs du capteur de statut",
+    "ent.attr.reason": "phrase en français qui explique la situation",
+    "ent.attr.cover": "entité du volet piloté",
+    "ent.attr.position": "position actuelle en pourcentage",
+    "ent.attr.room_temp": "température de la pièce utilisée",
+    "ent.attr.exposed": "la façade reçoit le soleil (vrai ou faux, vide si inconnu)",
+    "ent.attr.paused_until": "fin de la pause, si en pause",
+    "ent.attr.shaded_by_us": "vrai si l'intégration a abaissé le volet",
+    "ent.attr.last_action": "dernière action : close ou open",
+    "ent.attr.last_action_at": "date et heure de cette action",
+    "ent.attr.window_state": "fenêtres : open, closed ou unknown (vide si aucun capteur)",
+    "ent.examples": "Exemples avec vos identifiants",
+    "ent.exGlobal": "Pilotage global",
+    "ent.exCovers": "Tous les volets, par façade",
+    "ent.exReasons": "Pourquoi chaque volet est dans son état",
+    "ent.windowRow": "Fenêtre",
+    "ent.reasonRow": "Pourquoi",
 
     "common.retry": "Réessayer",
     "common.add": "Ajouter",
@@ -339,6 +377,44 @@ const I18N = {
     "tab.facades": "Facades",
     "tab.scenarios": "Scenarios",
     "tab.settings": "Settings",
+    "tab.entities": "Entities",
+    "ent.intro": "The actual identifiers of the entities created by the integration, to use in your dashboards, automations and templates.",
+    "ent.loading": "Loading entities…",
+    "ent.error": "Could not read the entities: {error}",
+    "ent.global": "Global entities",
+    "ent.mode": "Global mode",
+    "ent.scenario": "Active scenario",
+    "ent.outdoor": "Outdoor temperature used",
+    "ent.perCover": "Entities per shutter",
+    "ent.switch": "Automatic management",
+    "ent.status": "Status",
+    "ent.missing": "not created",
+    "ent.noCovers": "No shutter configured: no per-shutter entity.",
+    "ent.copy": "Copy",
+    "ent.copied": "Copied to the clipboard.",
+    "ent.copyFailed": "Automatic copy failed: select the text and copy it manually.",
+    "ent.copyId": "Copy identifier {id}",
+    "ent.values": "Possible values",
+    "ent.valuesStatus": "Shutter status",
+    "ent.valuesMode": "Global mode",
+    "ent.valuesScenario": "Scenario",
+    "ent.attrs": "Status sensor attributes",
+    "ent.attr.reason": "plain-language sentence explaining the situation",
+    "ent.attr.cover": "the controlled shutter entity",
+    "ent.attr.position": "current position in percent",
+    "ent.attr.room_temp": "room temperature used",
+    "ent.attr.exposed": "the facade receives sun (true or false, empty if unknown)",
+    "ent.attr.paused_until": "end of the pause, if paused",
+    "ent.attr.shaded_by_us": "true if the integration lowered the shutter",
+    "ent.attr.last_action": "last action: close or open",
+    "ent.attr.last_action_at": "date and time of that action",
+    "ent.attr.window_state": "windows: open, closed or unknown (empty if no sensor)",
+    "ent.examples": "Examples with your identifiers",
+    "ent.exGlobal": "Global control",
+    "ent.exCovers": "All shutters, by facade",
+    "ent.exReasons": "Why each shutter is in its state",
+    "ent.windowRow": "Window",
+    "ent.reasonRow": "Why",
 
     "common.retry": "Retry",
     "common.add": "Add",
@@ -658,7 +734,7 @@ function translate(lang, key, vars) {
 /* Constantes                                                          */
 /* ------------------------------------------------------------------ */
 
-const TAB_IDS = ["dashboard", "covers", "facades", "scenarios", "settings"];
+const TAB_IDS = ["dashboard", "covers", "facades", "scenarios", "entities", "settings"];
 const MODE_IDS = ["auto", "manual", "off"];
 const SCENARIO_IDS = ["summer", "winter", "vacation", "off"];
 const ORIENTATIONS = ["north", "east", "south", "west"];
@@ -891,6 +967,16 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .move-btns { display: flex; gap: 4px; flex: none; }
 .cover-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; flex: none; }
 .btn.icon { min-width: 44px; padding: 0; }
+.ent-cover { display: flex; flex-direction: column; gap: 6px; padding: 10px 0; }
+.ent-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
+.ent-label { flex: 1 1 100%; color: var(--secondary-text-color, #727272); font-size: 13px; }
+.ent-id { flex: 1 1 140px; min-width: 0; overflow-wrap: anywhere; font-size: 13px; }
+.ent-state { flex: none; }
+.ent-row .btn { padding: 0 12px; }
+.vals { margin: 0 0 8px; padding-left: 20px; display: flex; flex-direction: column; gap: 2px; }
+.vals code, .ent-id { font-family: monospace; }
+.yaml { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.code { margin: 0; padding: 10px 12px; border-radius: 8px; max-width: 100%; box-sizing: border-box; overflow: auto; max-height: 320px; font-size: 12px; background: var(--secondary-background-color, #f5f5f5); border: 1px solid var(--divider-color, #e0e0e0); user-select: all; }
 .cover-row.dragging { opacity: .5; }
 .cover-row.drop-target { outline: 2px dashed var(--primary-color, #03a9f4); outline-offset: -2px; }
 
@@ -1144,6 +1230,7 @@ class VoletsIntelligentsPanel extends HTMLElement {
     this._status = status;
     this._subError = null;
     this._refreshDashboard();
+    if (this._tab === "entities" && this._entityMap) this._renderMain();
     this._infoUpdaters.forEach((update) => update());
   }
 
@@ -1195,6 +1282,7 @@ class VoletsIntelligentsPanel extends HTMLElement {
 
   _setTab(id) {
     this._tab = id;
+    if (id === "entities") this._entityMap = null; // relu à chaque ouverture
     for (const [tabId, btn] of this._tabButtons) {
       btn.setAttribute("aria-selected", String(tabId === id));
     }
@@ -1236,6 +1324,7 @@ class VoletsIntelligentsPanel extends HTMLElement {
       covers: () => this._coversView(),
       facades: () => this._facadesView(),
       scenarios: () => this._scenariosView(),
+      entities: () => this._entitiesView(),
       settings: () => this._settingsView(),
     };
     this._main.replaceChildren(views[this._tab]());
@@ -1627,6 +1716,7 @@ class VoletsIntelligentsPanel extends HTMLElement {
       const saved = res && res.config ? res.config : this._draft;
       this._config = clone(saved);
       this._draft = clone(saved);
+      this._entityMap = null;
       this._saving = false;
       this._updateBar();
       this._renderMain();
@@ -2252,6 +2342,160 @@ class VoletsIntelligentsPanel extends HTMLElement {
       svg.setAttribute("aria-label", this._t("compass.aria", { deg: Math.round(h) }));
     };
     return { svg, update };
+  }
+
+  /* ---------- Onglet « Entités » ---------- */
+
+  async _loadEntityMap() {
+    if (this._entityLoading) return;
+    this._entityLoading = true;
+    try {
+      this._entityMap = await this._hass.callWS({ type: `${WS}get_entities` });
+      this._entityError = null;
+    } catch (err) {
+      this._entityError = this._err(err);
+    } finally {
+      this._entityLoading = false;
+      if (this._tab === "entities") this._renderMain();
+    }
+  }
+
+  _entitiesView() {
+    if (this._entityMap) return el("div", { class: "stack" }, this._entitiesContent(this._entityMap));
+    if (this._entityError) {
+      return el("div", { class: "notice c-red" },
+        el("span", { text: this._t("ent.error", { error: this._entityError }) }),
+        el("button", { class: "btn", type: "button", text: this._t("common.retry"),
+          onclick: () => { this._entityError = null; this._renderMain(); } }));
+    }
+    this._loadEntityMap();
+    return el("p", { class: "empty", text: this._t("ent.loading") });
+  }
+
+  /** Copie dans le presse-papiers ; repli : message pour copier à la main. */
+  async _copyText(text) {
+    try {
+      if (!navigator.clipboard) throw new Error("clipboard unavailable");
+      await navigator.clipboard.writeText(text);
+      this._flash(this._t("ent.copied"), "green");
+    } catch (_err) {
+      this._flash(this._t("ent.copyFailed"), "red");
+    }
+  }
+
+  /** Libellé lisible de l'état courant d'une entité de l'intégration. */
+  _entityStateText(entityId, kind) {
+    const st = this._hass && this._hass.states && this._hass.states[entityId];
+    if (!st) return "—";
+    const v = st.state;
+    if (v === "unavailable" || v === "unknown") return v;
+    if (kind === "status") return this._statusLabel(v);
+    if (kind === "mode" && MODE_IDS.includes(v)) return this._t(`mode.${v}`);
+    if (kind === "scenario" && SCENARIO_IDS.includes(v)) return this._t(`scenario.${v}`);
+    if (kind === "switch") return v === "on" ? "on" : "off";
+    if (kind === "temp") return this._num(Number(v), "°C");
+    return v;
+  }
+
+  _entityRow(label, entityId, kind) {
+    if (!entityId) {
+      return el("div", { class: "ent-row" },
+        el("span", { class: "ent-label", text: label }),
+        el("span", { class: "muted small", text: this._t("ent.missing") }));
+    }
+    return el("div", { class: "ent-row" },
+      el("span", { class: "ent-label", text: label }),
+      el("code", { class: "ent-id", text: entityId }),
+      el("span", { class: "ent-state small", text: this._entityStateText(entityId, kind) }),
+      el("button", { class: "btn", type: "button", text: this._t("ent.copy"),
+        "aria-label": this._t("ent.copyId", { id: entityId }), onclick: () => this._copyText(entityId) }));
+  }
+
+  _yamlBlock(title, text) {
+    return el("div", { class: "yaml" },
+      el("div", { class: "section-head" },
+        el("h3", { text: title }),
+        el("button", { class: "btn", type: "button", text: this._t("ent.copy"), onclick: () => this._copyText(text) })),
+      el("pre", { class: "code", tabindex: "0", text }));
+  }
+
+  _entitiesContent(map) {
+    const q = (v) => JSON.stringify(String(v)); // chaîne YAML entre guillemets
+    const covers = map.covers || [];
+    const cfgCovers = new Map(((this._config && this._config.covers) || []).map((c) => [c.entity_id, c]));
+    const facadeName = new Map(((this._config && this._config.facades) || []).map((f) => [f.id, f.name || f.id]));
+    const order = [...facadeName.keys()];
+    covers.forEach((c) => { if (!order.includes(c.facade)) order.push(c.facade); });
+    const groups = order.map((id) => [id, covers.filter((c) => c.facade === id)]).filter(([, list]) => list.length);
+
+    const globals = el("section", { class: "card" },
+      el("h2", { text: this._t("ent.global") }),
+      this._entityRow(this._t("ent.mode"), map.mode, "mode"),
+      this._entityRow(this._t("ent.scenario"), map.scenario, "scenario"),
+      this._entityRow(this._t("ent.outdoor"), map.outdoor, "temp"));
+
+    const perCover = el("section", { class: "card" },
+      el("h2", { text: this._t("ent.perCover") }),
+      groups.length ? groups.map(([id, list]) => el("div", { class: "cover-group" },
+        el("h3", { class: "group-title", text: facadeName.get(id) || this._t("dash.noFacadeGroup") }),
+        list.map((c) => el("div", { class: "ent-cover" },
+          el("strong", { text: c.name || c.cover }),
+          this._entityRow(this._t("ent.switch"), c.switch, "switch"),
+          this._entityRow(this._t("ent.status"), c.status, "status")))))
+        : el("p", { class: "muted", text: this._t("ent.noCovers") }));
+
+    const attrNames = ["reason", "cover", "position", "room_temp", "exposed", "paused_until",
+      "shaded_by_us", "last_action", "last_action_at", "window_state"];
+    const values = el("section", { class: "card" },
+      el("h2", { text: this._t("ent.values") }),
+      el("h3", { text: this._t("ent.valuesStatus") }),
+      el("ul", { class: "vals" }, Object.keys(STATUS_COLORS).map((code) =>
+        el("li", {}, el("code", { text: code }), ` : ${this._statusLabel(code)}`))),
+      el("h3", { text: this._t("ent.valuesMode") }),
+      el("ul", { class: "vals" }, MODE_IDS.map((m) => el("li", {}, el("code", { text: m }), ` : ${this._t(`mode.${m}`)}`))),
+      el("h3", { text: this._t("ent.valuesScenario") }),
+      el("ul", { class: "vals" }, SCENARIO_IDS.map((k) => el("li", {}, el("code", { text: k }), ` : ${this._t(`scenario.${k}`)}`))),
+      el("h3", { text: this._t("ent.attrs") }),
+      el("ul", { class: "vals" }, attrNames.map((n) => el("li", {}, el("code", { text: n }), ` : ${this._t(`ent.attr.${n}`)}`))));
+
+    // --- Exemples YAML avec les vrais identifiants
+    const globalYaml = ["type: entities", `title: ${q("Volets intelligents")}`, "entities:"];
+    [[map.mode, "ent.mode"], [map.scenario, "ent.scenario"], [map.outdoor, "ent.outdoor"]].forEach(([id, key]) => {
+      if (id) globalYaml.push(`  - entity: ${id}`, `    name: ${q(this._t(key))}`);
+    });
+
+    const coverYaml = ["type: vertical-stack", "cards:"];
+    groups.forEach(([id, list]) => {
+      coverYaml.push("  - type: entities", `    title: ${q(facadeName.get(id) || id)}`, "    entities:");
+      list.forEach((c) => {
+        const name = c.name || c.cover;
+        if (c.switch) coverYaml.push(`      - entity: ${c.switch}`, `        name: ${q(`${name} : ${this._t("ent.switch").toLowerCase()}`)}`);
+        if (c.status) {
+          coverYaml.push(`      - entity: ${c.status}`, `        name: ${q(name)}`,
+            "      - type: attribute", `        entity: ${c.status}`, "        attribute: reason",
+            `        name: ${q(this._t("ent.reasonRow"))}`);
+          const conf = cfgCovers.get(c.cover);
+          if (conf && (conf.window_entities || []).length) {
+            coverYaml.push("      - type: attribute", `        entity: ${c.status}`, "        attribute: window_state",
+              `        name: ${q(this._t("ent.windowRow"))}`);
+          }
+        }
+      });
+    });
+
+    const reasonLines = ["type: markdown", `title: ${q(this._t("ent.exReasons"))}`, "content: >"];
+    covers.filter((c) => c.status).forEach((c, i) => {
+      if (i) reasonLines.push("");
+      reasonLines.push(`  **${(c.name || c.cover).replace(/[*_`]/g, "")}** : {{ state_attr('${c.status}', 'reason') }}`);
+    });
+
+    const examples = el("section", { class: "card" },
+      el("h2", { text: this._t("ent.examples") }),
+      this._yamlBlock(this._t("ent.exGlobal"), globalYaml.join("\n")),
+      covers.length ? this._yamlBlock(this._t("ent.exCovers"), coverYaml.join("\n")) : null,
+      covers.some((c) => c.status) ? this._yamlBlock(this._t("ent.exReasons"), reasonLines.join("\n")) : null);
+
+    return [el("p", { class: "muted", text: this._t("ent.intro") }), globals, perCover, examples, values];
   }
 
   _settingsView() {

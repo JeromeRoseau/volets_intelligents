@@ -4,7 +4,7 @@ Intégration Home Assistant (HACS) qui protège la maison de la chaleur en pilot
 selon le soleil, les températures et l'activité des habitants, avec un **panneau de gestion
 graphique** et une **carte Lovelace**. Aucun YAML à écrire.
 
-> Version 0.3.2, non testée sur un Home Assistant réel : démarrez avec un ou deux volets non critiques.
+> Version 0.3.3, non testée sur un Home Assistant réel : démarrez avec un ou deux volets non critiques.
 
 ## Ce que fait l'intégration
 
@@ -90,13 +90,156 @@ Un volet **protégé par l'intégration** remonte si la façade n'est plus expos
 
 À la fin de la plage active, les volets encore protégés remontent.
 
-## Entités et services
+## Entités pour vos tableaux de bord
 
-- `select.volets_mode` (automatique, manuel, arrêté) et `select.volets_scenario`.
-- Par volet : `switch.volets_<nom>_auto` (gestion automatique) et `sensor.volets_<nom>_statut`
-  (avec l'explication en attribut `reason`).
-- `sensor.volets_temperature_exterieure_effective`.
-- Services : `volets_intelligents.pause`, `volets_intelligents.resume`, `volets_intelligents.evaluate`.
+L'intégration crée un appareil « Volets Intelligents » qui regroupe toutes ses entités. Les identifiants
+ci-dessous sont les identifiants **habituels** : Home Assistant les construit à partir du nom du volet au
+moment de sa création. Vérifiez les vôtres dans Paramètres > Appareils et services > Volets Intelligents
+(ou en cherchant « volets » dans Paramètres > Entités). Dans les exemples, `bureau` est à remplacer par le
+nom de votre volet.
+
+### Entités globales
+
+| Entité | Type | Valeurs | Usage |
+|---|---|---|---|
+| `select.volets_mode` | select | `auto`, `manual`, `off` (affichés Automatique, Manuel, Arrêté) | Mode global. Modifiable depuis un tableau de bord. |
+| `select.volets_scenario` | select | `summer`, `winter`, `vacation`, `off` (affichés Été, Hiver, Vacances, Désactivé) | Scénario actif. Modifiable, sauf quand le scénario automatique selon le mois est activé. |
+| `sensor.volets_temperature_exterieure_effective` | sensor (°C) | nombre, ou indisponible | Température extérieure réellement utilisée par les règles (maximum entre la mesure et la température ressentie si l'option est activée). |
+
+### Entités par volet
+
+| Entité | Type | Description |
+|---|---|---|
+| `switch.volets_<nom>_auto` | switch | Gestion automatique du volet : `on` = géré, `off` = ignoré par l'intégration. Remplace les `input_boolean.auto_volet_*`. |
+| `sensor.volets_<nom>_statut` | sensor (énumération) | Statut du volet (voir ci-dessous). L'explication en français et les autres informations sont dans les attributs. |
+
+Valeurs du statut (`sensor.volets_<nom>_statut`) :
+
+| Valeur | Affichage | Sens |
+|---|---|---|
+| `shaded` | Protégé du soleil | Le volet a été abaissé par l'intégration. |
+| `watching` | Surveillance | Rien à faire pour le moment. |
+| `paused` | En pause | Action manuelle détectée, ou pause demandée. |
+| `window_open` | Fenêtre ouverte | Fermeture bloquée (ou capteur de fenêtre indisponible). |
+| `wind_protected` | Protégé du vent | Mis en sécurité à cause du vent. |
+| `cooldown` | Anti-usure | Attente de l'intervalle minimal entre deux mouvements. |
+| `outside_window` | Hors plage | En dehors de la plage active. |
+| `grace` | Démarrage | Délai de sécurité après un redémarrage. |
+| `no_data` | Données manquantes | Température extérieure ou exposition indisponible : aucune action. |
+| `mode_manual` | Mode manuel | Le mode global est « manuel ». |
+| `mode_off` | Arrêté | Le mode global est « arrêté ». |
+| `scenario_off` | Scénario désactivé | Le scénario actif ne commande aucun volet. |
+| `disabled` | Désactivé | Volet non géré (interrupteur sur `off`). |
+| `unavailable` | Indisponible | L'entité volet est indisponible. |
+
+Attributs de `sensor.volets_<nom>_statut` :
+
+| Attribut | Contenu |
+|---|---|
+| `reason` | Phrase en français qui explique la situation (par exemple « Soleil sur la façade Est et 27,4 °C dehors »). |
+| `cover` | Entité du volet piloté (par exemple `cover.calyps_home_volet_bureau`). |
+| `position` | Position actuelle en pourcentage, ou vide si le volet n'en rapporte pas. |
+| `room_temp` | Température de la pièce utilisée, ou vide. |
+| `exposed` | `true` si la façade reçoit le soleil (météo comprise), `false` sinon, vide si l'information est indisponible. |
+| `paused_until` | Date et heure de fin de pause, ou vide. |
+| `shaded_by_us` | `true` si l'intégration a abaissé le volet. |
+| `last_action` | Dernière action de l'intégration : `close` ou `open`. |
+| `last_action_at` | Date et heure de cette action. |
+| `window_state` | État des capteurs d'ouverture du volet : `open`, `closed`, `unknown` (capteur indisponible), vide si aucun capteur. Une seule fenêtre ouverte suffit pour `open`. |
+
+Les entités d'un volet apparaissent ou disparaissent quand vous ajoutez ou retirez le volet dans le panneau.
+
+**Onglet « Entités » du panneau.** Il liste les identifiants réels des entités de votre installation (lus dans
+Home Assistant, donc exacts même si vous les avez renommées), avec un bouton « Copier » par identifiant, la
+liste des valeurs possibles et des exemples de cartes YAML déjà remplis avec vos identifiants.
+
+### Exemples prêts à copier
+
+Pilotage global (à adapter si vos identifiants diffèrent) :
+
+```yaml
+type: entities
+title: Volets intelligents
+entities:
+  - entity: select.volets_mode
+    name: Mode
+  - entity: select.volets_scenario
+    name: Scénario
+  - entity: sensor.volets_temperature_exterieure_effective
+    name: Température extérieure utilisée
+```
+
+Un volet avec son interrupteur, son statut et l'explication :
+
+```yaml
+type: entities
+title: Bureau
+entities:
+  - entity: cover.calyps_home_volet_bureau
+  - entity: switch.volets_bureau_auto
+    name: Gestion automatique
+  - entity: sensor.volets_bureau_statut
+    name: Statut
+  - type: attribute
+    entity: sensor.volets_bureau_statut
+    attribute: reason
+    name: Pourquoi
+```
+
+Explication de plusieurs volets dans une carte Markdown :
+
+```yaml
+type: markdown
+title: Volets, pourquoi ?
+content: >
+  **Bureau** : {{ state_attr('sensor.volets_bureau_statut', 'reason') }}
+
+  **Salon** : {{ state_attr('sensor.volets_salon_statut', 'reason') }}
+```
+
+Compter les volets actuellement abaissés par l'intégration (un modèle prêt à coller dans une carte Markdown ou
+dans un capteur modèle) :
+
+```yaml
+{{ states.sensor
+   | selectattr('attributes.volets_intelligents', 'defined')
+   | selectattr('state', 'eq', 'shaded')
+   | list | count }}
+```
+
+Tous les capteurs de statut portent l'attribut `volets_intelligents: true`, ce qui permet de les retrouver
+sans lister leurs noms, par exemple avec la carte `auto-entities` :
+
+```yaml
+type: custom:auto-entities
+card:
+  type: entities
+  title: Statut des volets
+filter:
+  include:
+    - domain: sensor
+      attributes:
+        volets_intelligents: true
+```
+
+### Services
+
+| Service | Champs | Effet |
+|---|---|---|
+| `volets_intelligents.pause` | `entity_id` (volets, tous si vide), `minutes` (durée des réglages si vide) | Met des volets en pause. |
+| `volets_intelligents.resume` | `entity_id` (tous si vide) | Reprend la gestion automatique. |
+| `volets_intelligents.evaluate` | aucun | Force une évaluation immédiate. |
+
+```yaml
+type: button
+name: Pause 2 h, salon
+tap_action:
+  action: perform-action
+  perform_action: volets_intelligents.pause
+  data:
+    entity_id: cover.calyps_home_volet_canape
+    minutes: 120
+```
 
 ## Carte Lovelace
 

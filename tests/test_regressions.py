@@ -312,3 +312,34 @@ async def test_status_exposes_window_state(hass, setup, sensor_state, expected):
     cover = manager.status["covers"][0]
     assert cover["window_state"] == expected
     assert cover["window_sensors"] == [{"entity_id": "binary_sensor.fenetre", "state": expected}]
+
+
+@pytest.mark.real_http
+async def test_get_entities_returns_real_entity_ids(hass, setup, hass_ws_client):
+    ws = await hass_ws_client(hass)
+    await ws.send_json({"id": 1, "type": "volets_intelligents/get_entities"})
+    res = await ws.receive_json()
+    assert res["success"], res
+    data = res["result"]
+    assert data["mode"] == "select.volets_mode"
+    assert data["scenario"] == "select.volets_scenario"
+    assert data["outdoor"] == "sensor.volets_temperature_exterieure_effective"
+    assert data["covers"][0]["cover"] == COVER
+    assert data["covers"][0]["status"] == STATUS
+    assert data["covers"][0]["switch"].startswith("switch.")
+
+
+@pytest.mark.real_http
+async def test_get_entities_is_admin_only(hass, setup, hass_ws_client, hass_read_only_access_token):
+    ws = await hass_ws_client(hass, hass_read_only_access_token)
+    await ws.send_json({"id": 1, "type": "volets_intelligents/get_entities"})
+    res = await ws.receive_json()
+    assert not res["success"] and res["error"]["code"] == "unauthorized"
+
+
+async def test_status_sensor_exposes_window_state_attribute(hass, setup):
+    manager, _, _, _ = setup
+    hass.states.async_set("binary_sensor.fenetre", "on")
+    await manager.async_evaluate()
+    await hass.async_block_till_done()
+    assert hass.states.get(STATUS).attributes["window_state"] == "open"
