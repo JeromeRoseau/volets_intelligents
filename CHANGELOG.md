@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.1
+
+Tableau de bord :
+
+- les volets sont groupés par façade (sous-titre par façade), avec un choix « Liste unique » ;
+- l'ordre des volets se change avec les flèches (ou par glisser-déposer sur ordinateur) et s'enregistre tout de suite ;
+- chaque volet affiche l'état de ses fenêtres et portes (ouverte, fermée, capteur indisponible) ;
+- onglet Volets : les capteurs d'ouverture à nom long ne sortent plus du cadre.
+
 ## 0.3.0
 
 Corrections issues d'une relecture indépendante (chaque point a un test de non-régression) :

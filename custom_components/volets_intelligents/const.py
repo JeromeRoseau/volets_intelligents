@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 DOMAIN = "volets_intelligents"
-VERSION = "0.3.0"
+VERSION = "0.3.1"
 NAME = "Volets Intelligents"
 
 # Fichiers statiques du frontend

@@ -296,3 +296,19 @@ def test_hostile_or_inconsistent_configs_are_rejected(mutation):
     mutation(cfg)
     with pytest.raises(ConfigError):
         normalize_config(cfg)
+
+
+# --- état des capteurs d'ouverture dans le statut -----------------------------------
+
+
+@pytest.mark.parametrize(
+    ("sensor_state", "expected"),
+    [("on", "open"), ("off", "closed"), ("unavailable", "unknown")],
+)
+async def test_status_exposes_window_state(hass, setup, sensor_state, expected):
+    manager, _, _, _ = setup
+    hass.states.async_set("binary_sensor.fenetre", sensor_state)
+    await manager.async_evaluate()
+    cover = manager.status["covers"][0]
+    assert cover["window_state"] == expected
+    assert cover["window_sensors"] == [{"entity_id": "binary_sensor.fenetre", "state": expected}]

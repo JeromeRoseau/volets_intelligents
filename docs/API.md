@@ -132,7 +132,9 @@ Stockée dans `.storage/volets_intelligents.config`. Envoyée/reçue en entier p
       "paused_until": null,     // ISO ou null
       "shaded_by_us": true,
       "last_action": "close",   // "close" | "open" | null
-      "last_action_at": "2026-09-30T11:05:00+02:00"
+      "last_action_at": "2026-09-30T11:05:00+02:00",
+      "window_state": "closed",  // null (aucun capteur) | "open" | "closed" | "unknown" (capteur indisponible)
+      "window_sensors": [ { "entity_id": "binary_sensor.fenetre_bureau", "state": "closed" } ]  // "open" | "closed" | "unknown"
     }
   ],
   "version": 1

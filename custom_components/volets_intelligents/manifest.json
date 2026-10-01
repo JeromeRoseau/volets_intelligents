@@ -13,11 +13,11 @@
     "panel_custom",
     "websocket_api"
   ],
-  "documentation": "https://github.com/OWNER/volets-intelligents",
+  "documentation": "https://github.com/JeromeRoseau/volets_intelligents",
   "integration_type": "service",
   "iot_class": "calculated",
-  "issue_tracker": "https://github.com/OWNER/volets-intelligents/issues",
+  "issue_tracker": "https://github.com/JeromeRoseau/volets_intelligents/issues",
   "requirements": [],
   "single_config_entry": true,
-  "version": "0.3.0"
+  "version": "0.3.1"
 }

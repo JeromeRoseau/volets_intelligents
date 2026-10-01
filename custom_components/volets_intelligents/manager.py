@@ -584,7 +584,29 @@ class VoletsManager:
             "shaded_by_us": rt.shaded_by_us,
             "last_action": rt.last_action,
             "last_action_at": _iso(rt.last_action_at),
+            **self._window_status(cover),
         }
+
+    def _window_status(self, cover: dict[str, Any]) -> dict[str, Any]:
+        """État des capteurs d'ouverture : `window_state` = None (aucun capteur), open, closed, unknown."""
+        sensors = []
+        for entity_id in cover["window_entities"]:
+            state = self.hass.states.get(entity_id)
+            if state is None or state.state in _INVALID:
+                value = "unknown"
+            else:
+                value = "open" if state.state == STATE_ON else "closed"
+            sensors.append({"entity_id": entity_id, "state": value})
+        values = {s["state"] for s in sensors}
+        if not sensors:
+            overall = None
+        elif "open" in values:
+            overall = "open"
+        elif "unknown" in values:
+            overall = "unknown"
+        else:
+            overall = "closed"
+        return {"window_state": overall, "window_sensors": sensors}
 
     # --- exécution ------------------------------------------------------------
 

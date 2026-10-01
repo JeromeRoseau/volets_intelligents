@@ -3,7 +3,7 @@
   "settings": {
     "outdoor_temp_entity": "sensor.temperature_rossignole",
     "feels_like_entity": "sensor.temperature_rossignole_ressentie",
-    "house_orientation": 180,
+    "house_orientation": 199,
     "use_max_feels_like": true,
     "weather_entity": null,
     "sunny_conditions": [
@@ -72,8 +72,8 @@
       "exposure": {
         "mode": "sun",
         "entity": null,
-        "half_angle": 80,
-        "elevation_min": 10
+        "half_angle": 90,
+        "elevation_min": 5
       }
     },
     {
@@ -85,8 +85,8 @@
       "exposure": {
         "mode": "entity",
         "entity": "binary_sensor.volets_exposition_est",
-        "half_angle": 80,
-        "elevation_min": 10
+        "half_angle": 90,
+        "elevation_min": 5
       }
     },
     {
@@ -98,8 +98,8 @@
       "exposure": {
         "mode": "entity",
         "entity": "binary_sensor.volets_exposition_sud",
-        "half_angle": 80,
-        "elevation_min": 10
+        "half_angle": 90,
+        "elevation_min": 5
       }
     },
     {
@@ -111,8 +111,8 @@
       "exposure": {
         "mode": "entity",
         "entity": "binary_sensor.volets_exposition_ouest",
-        "half_angle": 80,
-        "elevation_min": 10
+        "half_angle": 90,
+        "elevation_min": 5
       }
     }
   ],

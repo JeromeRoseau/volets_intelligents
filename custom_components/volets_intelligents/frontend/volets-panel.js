@@ -132,6 +132,19 @@ const I18N = {
     "dash.noFacades": "Aucune façade.",
     "dash.covers": "Volets ({n})",
     "dash.noCovers": "Aucun volet configuré.",
+    "dash.byFacade": "Par façade",
+    "dash.flatList": "Liste unique",
+    "dash.view": "Affichage des volets",
+    "dash.noFacadeGroup": "Sans façade",
+    "dash.moveUp": "Monter {name}",
+    "dash.moveDown": "Descendre {name}",
+    "dash.drag": "Glisser pour déplacer {name}",
+    "dash.orderHint": "Utilisez les flèches (ou glissez la poignée sur ordinateur) pour changer l'ordre. L'ordre est enregistré tout de suite.",
+    "dash.orderSaved": "Ordre des volets enregistré.",
+    "dash.window.open": "Fenêtre ouverte",
+    "dash.window.closed": "Fenêtre fermée",
+    "dash.window.unknown": "Capteur de fenêtre indisponible",
+    "err.reorder": "Impossible d'enregistrer l'ordre : {error}",
     "dash.position": "Position : {value}",
     "dash.room": "Pièce : {value}",
     "dash.pausedUntil": "Pause jusqu'à {time}",
@@ -435,6 +448,19 @@ const I18N = {
     "dash.noFacades": "No facades.",
     "dash.covers": "Shutters ({n})",
     "dash.noCovers": "No shutters configured.",
+    "dash.byFacade": "By facade",
+    "dash.flatList": "Single list",
+    "dash.view": "Shutter display",
+    "dash.noFacadeGroup": "No facade",
+    "dash.moveUp": "Move {name} up",
+    "dash.moveDown": "Move {name} down",
+    "dash.drag": "Drag to move {name}",
+    "dash.orderHint": "Use the arrows (or drag the handle on a computer) to change the order. The order is saved immediately.",
+    "dash.orderSaved": "Shutter order saved.",
+    "dash.window.open": "Window open",
+    "dash.window.closed": "Window closed",
+    "dash.window.unknown": "Window sensor unavailable",
+    "err.reorder": "Could not save the order: {error}",
     "dash.position": "Position: {value}",
     "dash.room": "Room: {value}",
     "dash.pausedUntil": "Paused until {time}",
@@ -854,10 +880,19 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .badge .dot { width: 10px; height: 10px; }
 
 .cover-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px 0; border-top: 1px solid var(--divider-color, #e0e0e0); }
-.cover-row:first-child { border-top: 0; }
+.cover-row:first-child, .group-title + .cover-row { border-top: 0; }
 .cover-main { flex: 1 1 240px; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .cover-title { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-weight: 500; }
 .cover-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+.section-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
+.group-title { margin: 16px 0 0; padding-bottom: 4px; border-bottom: 2px solid var(--primary-color, #03a9f4); color: var(--primary-text-color, #212121); }
+.cover-group:first-of-type .group-title { margin-top: 8px; }
+.drag-handle { flex: none; min-width: 28px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; cursor: grab; color: var(--secondary-text-color, #727272); user-select: none; letter-spacing: -2px; }
+.move-btns { display: flex; gap: 4px; flex: none; }
+.cover-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; flex: none; }
+.btn.icon { min-width: 44px; padding: 0; }
+.cover-row.dragging { opacity: .5; }
+.cover-row.drop-target { outline: 2px dashed var(--primary-color, #03a9f4); outline-offset: -2px; }
 
 details.card > summary {
   list-style: none; cursor: pointer; min-height: 44px; display: flex;
@@ -890,11 +925,13 @@ textarea { font-family: monospace; font-size: 13px; padding: 8px 12px; min-heigh
 .toggle input { width: 22px; height: 22px; flex: none; accent-color: var(--primary-color, #03a9f4); }
 .toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
 
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; max-width: 100%; min-width: 0; }
 .chip {
-  display: inline-flex; align-items: center; min-height: 44px; padding-left: 12px;
-  border: 1px solid var(--divider-color, #ccc); border-radius: 22px; gap: 4px;
+  display: inline-flex; flex-wrap: wrap; align-items: center; min-height: 44px; padding-left: 12px;
+  max-width: 100%; min-width: 0; box-sizing: border-box;
+  border: 1px solid var(--divider-color, #ccc); border-radius: 22px; gap: 0 8px;
 }
+.chip > span { min-width: 0; overflow-wrap: anywhere; word-break: break-word; }
 .chip button { min-width: 44px; min-height: 44px; border: 0; background: none; color: var(--secondary-text-color, #727272); font-size: 20px; cursor: pointer; }
 .chip-id { font-size: 12px; color: var(--secondary-text-color, #727272); }
 .chip-toggle { min-height: 44px; padding: 0 14px; border-radius: 22px; border: 1px solid var(--divider-color, #ccc); background: transparent; color: var(--primary-text-color, #212121); cursor: pointer; }
@@ -1294,11 +1331,7 @@ class VoletsIntelligentsPanel extends HTMLElement {
           this._facadeStatusCard(id, f, cfgFacades.get(id), (st.covers || []).filter((c) => c.facade === id).length)))
         : el("p", { class: "muted", text: this._t("dash.noFacades") }));
 
-    const covers = el("section", { class: "card" },
-      el("h2", { text: this._t("dash.covers", { n: (st.covers || []).length }) }),
-      (st.covers || []).length
-        ? el("div", {}, st.covers.map((c) => this._coverRow(c, busyAll)))
-        : el("p", { class: "muted", text: this._t("dash.noCovers") }));
+    const covers = this._coversSection(st, busyAll);
 
     return el("div", { class: "stack" },
       this._subError ? el("div", { class: "notice c-red" },
@@ -1354,25 +1387,170 @@ class VoletsIntelligentsPanel extends HTMLElement {
       el("span", { class: "small muted", text: this._t(count === 1 ? "fcard.coversOne" : "fcard.coversOther", { n: count }) }));
   }
 
-  _coverRow(c, busyAll) {
+  /** Préférence d'affichage (par façade ou liste unique), mémorisée dans le navigateur. */
+  _groupByFacade() {
+    if (this._grouped !== undefined) return this._grouped;
+    let value = true;
+    try { value = window.localStorage.getItem("volets_intelligents.grouped") !== "0"; } catch (_) { /* stockage indisponible */ }
+    this._grouped = value;
+    return value;
+  }
+
+  _setGrouped(value) {
+    this._grouped = value;
+    try { window.localStorage.setItem("volets_intelligents.grouped", value ? "1" : "0"); } catch (_) { /* ignoré */ }
+    this._renderMain();
+  }
+
+  _coversSection(st, busyAll) {
+    const covers = st.covers || [];
+    const header = el("div", { class: "section-head" },
+      el("h2", { text: this._t("dash.covers", { n: covers.length }) }),
+      covers.length > 1 ? this._segmented(
+        [["facade", this._t("dash.byFacade")], ["flat", this._t("dash.flatList")]],
+        this._groupByFacade() ? "facade" : "flat",
+        (v) => this._setGrouped(v === "facade"), this._t("dash.view"), false) : null);
+    if (!covers.length) {
+      return el("section", { class: "card" }, header, el("p", { class: "muted", text: this._t("dash.noCovers") }));
+    }
+    const reorderable = Boolean(this._config) && !this._reordering;
+    const hint = covers.length > 1
+      ? el("p", { class: "small muted", text: this._t("dash.orderHint") }) : null;
+    let body;
+    if (this._groupByFacade()) {
+      const names = new Map(Object.entries(st.facades || {}).map(([id, f]) => [id, f.name || id]));
+      const order = [...names.keys()];
+      covers.forEach((c) => { if (!order.includes(c.facade)) order.push(c.facade); });
+      body = order.map((id) => {
+        const group = covers.filter((c) => c.facade === id);
+        if (!group.length) return null;
+        return el("div", { class: "cover-group" },
+          el("h3", { class: "group-title", text: names.get(id) || this._t("dash.noFacadeGroup") }),
+          group.map((c, i) => this._coverRow(c, busyAll, group, i, reorderable)));
+      });
+    } else {
+      body = covers.map((c, i) => this._coverRow(c, busyAll, covers, i, reorderable));
+    }
+    return el("section", { class: "card" }, header, hint, body);
+  }
+
+  /** Enregistre un nouvel ordre des volets (liste d'entity_id) dans la configuration. */
+  async _saveCoverOrder(ids) {
+    if (this._reordering || !this._config) return;
+    const rank = new Map(ids.map((id, i) => [id, i]));
+    const sortByRank = (list) => list
+      .map((c, i) => [c, i])
+      .sort((a, b) => (rank.has(a[0].entity_id) ? rank.get(a[0].entity_id) : 1e6 + a[1])
+        - (rank.has(b[0].entity_id) ? rank.get(b[0].entity_id) : 1e6 + b[1]))
+      .map(([c]) => c);
+    this._reordering = true;
+    const next = clone(this._config);
+    next.covers = sortByRank(next.covers);
+    try {
+      const res = await this._hass.callWS({ type: `${WS}set_config`, config: next });
+      this._config = clone(res && res.config ? res.config : next);
+      // Un brouillon en cours suit le même ordre, sans perdre ses modifications.
+      if (this._draft) this._draft.covers = sortByRank(this._draft.covers);
+      this._flash(this._t("dash.orderSaved"), "green");
+    } catch (err) {
+      this._flash(this._t("err.reorder", { error: this._err(err) }), "red");
+    } finally {
+      this._reordering = false;
+      this._refreshDashboard();
+    }
+  }
+
+  /** Échange deux volets voisins dans l'ordre global (`group` = liste affichée). */
+  _swapCovers(group, i, j) {
+    if (j < 0 || j >= group.length) return;
+    const ids = this._config.covers.map((c) => c.entity_id);
+    const a = ids.indexOf(group[i].entity_id);
+    const b = ids.indexOf(group[j].entity_id);
+    if (a < 0 || b < 0) return;
+    [ids[a], ids[b]] = [ids[b], ids[a]];
+    this._saveCoverOrder(ids);
+  }
+
+  /** Déplace `from` à la place de `to` (glisser-déposer). */
+  _dropCover(from, to) {
+    if (!from || !to || from === to) return;
+    const ids = this._config.covers.map((c) => c.entity_id);
+    const a = ids.indexOf(from);
+    const b = ids.indexOf(to);
+    if (a < 0 || b < 0) return;
+    ids.splice(a, 1);
+    ids.splice(b, 0, from);
+    this._saveCoverOrder(ids);
+  }
+
+  _windowBadge(c) {
+    if (!c.window_state) return null;
+    const color = { open: "orange", closed: "green", unknown: "red" }[c.window_state] || "grey";
+    const badge = this._badge(color, this._t(`dash.window.${c.window_state}`));
+    const sensors = (c.window_sensors || []).map((w) => `${this._friendly(w.entity_id) || w.entity_id} : ${this._t(`dash.window.${w.state}`)}`);
+    if (sensors.length) badge.setAttribute("title", sensors.join("\n"));
+    return badge;
+  }
+
+  _coverRow(c, busyAll, group = [c], index = 0, reorderable = false) {
     const color = STATUS_COLORS[c.status] || "grey";
     const paused = isPaused(c);
     const name = c.name || c.entity_id;
-    return el("div", { class: "cover-row" },
-      el("div", { class: "cover-main" },
-        el("div", { class: "cover-title" }, el("span", { text: name }), this._badge(color, this._statusLabel(c.status))),
-        c.reason ? el("span", { class: "muted", text: c.reason }) : null,
-        el("div", { class: "cover-meta small muted" },
-          el("span", { text: this._t("dash.position", { value: this._num(c.position, "%", 0) }) }),
-          el("span", { text: this._t("dash.room", { value: this._num(c.room_temp, "°C") }) }),
-          c.paused_until ? el("span", { text: this._t("dash.pausedUntil", { time: this._time(c.paused_until) }) }) : null)),
-      el("button", {
-        class: "btn", type: "button", text: paused ? this._t("dash.resume") : this._t("dash.pause"),
-        disabled: busyAll || c.enabled === false,
-        "aria-label": this._t(paused ? "dash.resumeAria" : "dash.pauseAria", { name }),
-        onclick: () => this._command(
-          { command: paused ? "resume" : "pause", entity_id: c.entity_id }, `cover-${c.entity_id}`),
-      }));
+    const row = el("div", { class: "cover-row" });
+    const canMove = reorderable && group.length > 1;
+    const handle = canMove ? el("span", {
+      class: "drag-handle", draggable: "true", role: "img", title: this._t("dash.drag", { name }),
+      "aria-label": this._t("dash.drag", { name }), text: "⋮⋮",
+      ondragstart: (e) => {
+        e.dataTransfer.setData("text/plain", c.entity_id);
+        e.dataTransfer.effectAllowed = "move";
+        this._dragId = c.entity_id;
+        row.classList.add("dragging");
+      },
+      ondragend: () => { row.classList.remove("dragging"); this._dragId = null; },
+    }) : null;
+    if (canMove) {
+      row.addEventListener("dragover", (e) => {
+        if (this._dragId && group.some((g) => g.entity_id === this._dragId)) {
+          e.preventDefault();
+          row.classList.add("drop-target");
+        }
+      });
+      row.addEventListener("dragleave", () => row.classList.remove("drop-target"));
+      row.addEventListener("drop", (e) => {
+        e.preventDefault();
+        row.classList.remove("drop-target");
+        const from = this._dragId;
+        this._dragId = null;
+        if (from && group.some((g) => g.entity_id === from)) this._dropCover(from, c.entity_id);
+      });
+    }
+    const arrows = canMove ? el("div", { class: "move-btns" },
+      el("button", { class: "btn icon", type: "button", text: "↑", disabled: index === 0,
+        "aria-label": this._t("dash.moveUp", { name }), title: this._t("dash.moveUp", { name }),
+        onclick: () => this._swapCovers(group, index, index - 1) }),
+      el("button", { class: "btn icon", type: "button", text: "↓", disabled: index === group.length - 1,
+        "aria-label": this._t("dash.moveDown", { name }), title: this._t("dash.moveDown", { name }),
+        onclick: () => this._swapCovers(group, index, index + 1) })) : null;
+    row.append(
+      ...[handle,
+        el("div", { class: "cover-main" },
+          el("div", { class: "cover-title" }, el("span", { text: name }), this._badge(color, this._statusLabel(c.status)),
+            this._windowBadge(c)),
+          c.reason ? el("span", { class: "muted", text: c.reason }) : null,
+          el("div", { class: "cover-meta small muted" },
+            el("span", { text: this._t("dash.position", { value: this._num(c.position, "%", 0) }) }),
+            el("span", { text: this._t("dash.room", { value: this._num(c.room_temp, "°C") }) }),
+            c.paused_until ? el("span", { text: this._t("dash.pausedUntil", { time: this._time(c.paused_until) }) }) : null)),
+        el("div", { class: "cover-actions" }, arrows,
+          el("button", {
+            class: "btn", type: "button", text: paused ? this._t("dash.resume") : this._t("dash.pause"),
+            disabled: busyAll || c.enabled === false,
+            "aria-label": this._t(paused ? "dash.resumeAria" : "dash.pauseAria", { name }),
+            onclick: () => this._command(
+              { command: paused ? "resume" : "pause", entity_id: c.entity_id }, `cover-${c.entity_id}`),
+          }))].filter(Boolean));
+    return row;
   }
 
   _tile(label, value, sub) {
