@@ -52,6 +52,13 @@ graphique** et une **carte Lovelace**. Aucun YAML à écrire.
 
 Version minimale de Home Assistant : 2026.3.0. Le panneau et la carte sont disponibles en français et en anglais.
 
+### Accéder au panneau, masquer le menu latéral
+
+Dans Paramètres > Appareils et services > Volets Intelligents > **Configurer**, la case « Afficher “Volets” dans le menu
+latéral » permet de retirer l'entrée du menu. Le panneau reste accessible à l'adresse `/volets-intelligents` (lien
+fourni dans cette même fenêtre) et par le bouton **Visiter** de la page de l'appareil « Volets Intelligents ». La carte
+Lovelace n'est pas concernée. Le changement recharge l'intégration (quelques secondes).
+
 ### Premiers pas
 
 1. **Orientation de la maison** (Réglages) : vers quel azimut regarde votre façade « Sud » ? 180 si votre

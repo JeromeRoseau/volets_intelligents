@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.7
+
+- menu de configuration de l'intégration (Configurer) : case pour afficher ou masquer « Volets » dans le menu latéral,
+  avec un lien direct vers le panneau ;
+- bouton « Visiter » sur la page de l'appareil « Volets Intelligents » : ouvre le panneau, même masqué du menu latéral.
+
 ## 0.3.6
 
 - icône et logo de l'intégration (dossier `brand/`, clair et sombre, normal et @2x) : Home Assistant 2026.3 et plus les

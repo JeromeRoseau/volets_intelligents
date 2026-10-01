@@ -67,3 +67,40 @@ async def test_real_frontend_registration(hass, hass_client, hass_ws_client):
     assert await hass.config_entries.async_unload(entry.entry_id)
     await hass.async_block_till_done()
     assert "volets-intelligents" not in hass.data["frontend_panels"]
+
+
+async def test_sidebar_option_hides_menu_but_keeps_panel(hass, hass_client):
+    assert await async_setup_component(hass, "http", {})
+    assert await async_setup_component(hass, "frontend", {})
+    entry = MockConfigEntry(domain=DOMAIN, title="Volets Intelligents")
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    panel = hass.data["frontend_panels"]["volets-intelligents"]
+    assert panel.sidebar_title == "Volets"
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    assert result["type"] == "form"
+    assert result["description_placeholders"]["panel_url"] == "/volets-intelligents"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"show_sidebar": False}
+    )
+    assert result["type"] == "create_entry"
+    await hass.async_block_till_done()
+    panel = hass.data["frontend_panels"]["volets-intelligents"]  # toujours accessible
+    assert panel.sidebar_title is None and panel.sidebar_icon is None
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    await hass.config_entries.options.async_configure(result["flow_id"], {"show_sidebar": True})
+    await hass.async_block_till_done()
+    assert hass.data["frontend_panels"]["volets-intelligents"].sidebar_title == "Volets"
+
+
+async def test_device_links_to_the_panel(hass):
+    from homeassistant.helpers import device_registry as dr
+
+    from custom_components.volets_intelligents.entity import device_info
+
+    info = device_info("abc")
+    assert info["configuration_url"] == "homeassistant://volets-intelligents"
+    assert dr.CONFIGURATION_URL_SCHEMES >= {"homeassistant"}

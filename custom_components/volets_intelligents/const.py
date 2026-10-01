@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 DOMAIN = "volets_intelligents"
-VERSION = "0.3.6"
+VERSION = "0.3.7"
 NAME = "Volets Intelligents"
 
 # Fichiers statiques du frontend
@@ -11,6 +11,7 @@ URL_BASE = "/volets_intelligents_static"
 PANEL_URL_PATH = "volets-intelligents"
 PANEL_ELEMENT = "volets-intelligents-panel"
 PANEL_JS = "volets-panel.js"
+CONF_SHOW_SIDEBAR = "show_sidebar"
 CARD_JS = "volets-card.js"
 
 # Stockage

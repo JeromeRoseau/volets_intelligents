@@ -11,7 +11,14 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import Entity
 
-from .const import DOMAIN, NAME, SIGNAL_CONFIG_CHANGED, SIGNAL_STATUS_UPDATED, VERSION
+from .const import (
+    DOMAIN,
+    NAME,
+    PANEL_URL_PATH,
+    SIGNAL_CONFIG_CHANGED,
+    SIGNAL_STATUS_UPDATED,
+    VERSION,
+)
 from .manager import VoletsManager
 
 
@@ -22,6 +29,7 @@ def device_info(entry_id: str) -> DeviceInfo:
         manufacturer="Volets Intelligents",
         model="Gestion thermique des volets",
         sw_version=VERSION,
+        configuration_url=f"homeassistant://{PANEL_URL_PATH}",
     )
 
 
