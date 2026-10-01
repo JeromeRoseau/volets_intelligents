@@ -1,0 +1,23 @@
+{
+  "domain": "volets_intelligents",
+  "name": "Volets Intelligents",
+  "after_dependencies": [
+    "sun",
+    "weather"
+  ],
+  "codeowners": [],
+  "config_flow": true,
+  "dependencies": [
+    "frontend",
+    "http",
+    "panel_custom",
+    "websocket_api"
+  ],
+  "documentation": "https://github.com/OWNER/volets-intelligents",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/OWNER/volets-intelligents/issues",
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "0.3.0"
+}

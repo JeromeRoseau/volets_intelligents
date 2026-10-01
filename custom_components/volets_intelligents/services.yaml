@@ -1,0 +1,37 @@
+pause:
+  name: Mettre en pause
+  description: Met un ou plusieurs volets en pause (la gestion automatique les ignore).
+  fields:
+    entity_id:
+      name: Volets
+      description: Volets concernés. Tous les volets gérés si vide.
+      required: false
+      selector:
+        entity:
+          domain: cover
+          multiple: true
+    minutes:
+      name: Durée (minutes)
+      description: Durée de la pause. Durée par défaut des réglages si vide.
+      required: false
+      selector:
+        number:
+          min: 1
+          max: 1440
+          unit_of_measurement: min
+          mode: box
+resume:
+  name: Reprendre
+  description: Reprend la gestion automatique de volets en pause.
+  fields:
+    entity_id:
+      name: Volets
+      description: Volets concernés. Tous les volets gérés si vide.
+      required: false
+      selector:
+        entity:
+          domain: cover
+          multiple: true
+evaluate:
+  name: Évaluer maintenant
+  description: Force une évaluation immédiate de tous les volets.

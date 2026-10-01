@@ -1,0 +1,82 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Volets Intelligents",
+        "description": "Ajoute l'intégration. Tous les réglages (volets, façades, scénarios) se font ensuite dans le panneau « Volets » de la barre latérale."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Volets Intelligents est déjà configuré."
+    }
+  },
+  "entity": {
+    "select": {
+      "mode": {
+        "state": {
+          "auto": "Automatique",
+          "manual": "Manuel",
+          "off": "Arrêté"
+        }
+      },
+      "scenario": {
+        "state": {
+          "summer": "Été",
+          "winter": "Hiver",
+          "vacation": "Vacances",
+          "off": "Désactivé"
+        }
+      }
+    },
+    "sensor": {
+      "cover_status": {
+        "state": {
+          "disabled": "Désactivé",
+          "mode_manual": "Mode manuel",
+          "mode_off": "Arrêté",
+          "scenario_off": "Scénario désactivé",
+          "grace": "Démarrage",
+          "outside_window": "Hors plage",
+          "no_data": "Données manquantes",
+          "paused": "En pause",
+          "window_open": "Fenêtre ouverte",
+          "wind_protected": "Protégé du vent",
+          "shaded": "Protégé du soleil",
+          "watching": "Surveillance",
+          "cooldown": "Anti-usure",
+          "unavailable": "Indisponible"
+        }
+      }
+    }
+  },
+  "services": {
+    "pause": {
+      "name": "Mettre en pause",
+      "description": "Met des volets en pause.",
+      "fields": {
+        "entity_id": {
+          "name": "Volets",
+          "description": "Volets concernés. Tous les volets gérés si vide."
+        },
+        "minutes": {
+          "name": "Durée (minutes)",
+          "description": "Durée de la pause. Durée par défaut des réglages si vide."
+        }
+      }
+    },
+    "resume": {
+      "name": "Reprendre",
+      "description": "Reprend la gestion automatique.",
+      "fields": {
+        "entity_id": {
+          "name": "Volets",
+          "description": "Volets concernés. Tous les volets gérés si vide."
+        }
+      }
+    },
+    "evaluate": {
+      "name": "Évaluer maintenant",
+      "description": "Force une évaluation immédiate."
+    }
+  }
+}

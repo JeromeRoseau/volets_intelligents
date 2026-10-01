@@ -1,0 +1,82 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Smart Shutters",
+        "description": "Adds the integration. All settings (covers, facades, scenarios) are then managed in the \"Volets\" side panel."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Already configured."
+    }
+  },
+  "entity": {
+    "select": {
+      "mode": {
+        "state": {
+          "auto": "Automatic",
+          "manual": "Manual",
+          "off": "Stopped"
+        }
+      },
+      "scenario": {
+        "state": {
+          "summer": "Summer",
+          "winter": "Winter",
+          "vacation": "Vacation",
+          "off": "Disabled"
+        }
+      }
+    },
+    "sensor": {
+      "cover_status": {
+        "state": {
+          "disabled": "Disabled",
+          "mode_manual": "Manual mode",
+          "mode_off": "Stopped",
+          "scenario_off": "Scenario disabled",
+          "grace": "Starting up",
+          "outside_window": "Outside window",
+          "no_data": "Missing data",
+          "paused": "Paused",
+          "window_open": "Window open",
+          "wind_protected": "Wind protected",
+          "shaded": "Sun protected",
+          "watching": "Watching",
+          "cooldown": "Cooldown",
+          "unavailable": "Unavailable"
+        }
+      }
+    }
+  },
+  "services": {
+    "pause": {
+      "name": "Pause",
+      "description": "Pauses covers.",
+      "fields": {
+        "entity_id": {
+          "name": "Covers",
+          "description": "Covers concerned. All managed covers if empty."
+        },
+        "minutes": {
+          "name": "Duration (minutes)",
+          "description": "Pause duration. Default from the settings if empty."
+        }
+      }
+    },
+    "resume": {
+      "name": "Resume",
+      "description": "Resumes automatic control.",
+      "fields": {
+        "entity_id": {
+          "name": "Covers",
+          "description": "Covers concerned. All managed covers if empty."
+        }
+      }
+    },
+    "evaluate": {
+      "name": "Evaluate now",
+      "description": "Forces an immediate evaluation."
+    }
+  }
+}
