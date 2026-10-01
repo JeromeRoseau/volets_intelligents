@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.6
+
+- icône et logo de l'intégration (dossier `brand/`, clair et sombre, normal et @2x) : Home Assistant 2026.3 et plus les
+  affiche à la place de « icon not available » ; la liste des mises à jour de HACS ne les utilise pas encore
+  (voir hacs/integration#5171).
+
 ## 0.3.5
 
 - un volet fermé à 100 % (position 0 %, ou état « fermé » sans position) n'est plus jamais remonté par
