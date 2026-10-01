@@ -14,6 +14,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
 from .const import DOMAIN, SIGNAL_STATUS_UPDATED
 from .manager import VoletsManager
+from .number import SCENARIO_THRESHOLDS
 from .schema import ConfigError, default_config
 
 
@@ -122,6 +123,10 @@ def ws_get_entities(hass: HomeAssistant, connection, msg: dict[str, Any]) -> Non
                 "end_mode": find("select", "window_end_mode"),
                 "sunset_offset": find("number", "window_sunset_offset"),
             },
+            "thresholds": [
+                {"scenario": scenario, "key": key, "entity_id": find("number", f"{scenario}_{key}")}
+                for scenario, key, _label in SCENARIO_THRESHOLDS
+            ],
             "facades": [
                 {
                     "id": facade["id"],

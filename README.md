@@ -148,6 +148,19 @@ nom de votre volet.
 | `select.volets_reglage_plage_mode_fin` | select | **Réglage** du mode de fin : `fixed` (heure fixe), `entity` (lue dans une entité), `sunset` (coucher du soleil). Le mode `entity` demande qu'une entité de fin soit déjà choisie dans le panneau, sinon le changement est refusé. |
 | `number.volets_reglage_plage_decalage_coucher` | number (min) | **Réglage** du décalage par rapport au coucher du soleil (de -240 à 240, utile en mode `sunset`). |
 
+### Seuils des scénarios
+
+| Entité | Type | Usage |
+|---|---|---|
+| `number.volets_seuil_ete_fermeture_exterieur` | number (°C) | **Réglage** : l'été, fermeture quand l'extérieur atteint ce seuil. |
+| `number.volets_seuil_ete_fermeture_piece` | number (°C) | **Réglage** : l'été, fermeture quand la pièce atteint ce seuil. |
+| `number.volets_seuil_ete_reouverture_exterieur` | number (°C) | **Réglage** : l'été, réouverture sous ce seuil extérieur. |
+| `number.volets_seuil_ete_reouverture_piece` | number (°C) | **Réglage** : l'été, réouverture sous ce seuil pièce. |
+| `number.volets_seuil_hiver_gain_exterieur` | number (°C) | **Réglage** : l'hiver, gain solaire quand l'extérieur est sous ce seuil. |
+| `number.volets_seuil_hiver_gain_piece` | number (°C) | **Réglage** : l'hiver, gain solaire quand la pièce est sous ce seuil. |
+
+Ils modifient le scénario correspondant ; les scénarios « vacances » et « désactivé » n'ont pas de seuils.
+
 L'entité qui fournit la fin de plage (par exemple `sensor.volets_heure_remontee`) se choisit dans le panneau
 (Réglages). Chaque modification faite par ces entités est enregistrée comme si elle venait du panneau.
 

@@ -93,6 +93,12 @@ async def test_summer_thresholds_are_editable_from_entities(hass, setup):
     )
     assert manager.config["scenarios"]["summer"]["close_outdoor"] == 28
     assert float(hass.states.get("number.volets_seuil_ete_fermeture_exterieur").state) == 28
+    await hass.services.async_call(
+        "number", "set_value",
+        {"entity_id": "number.volets_seuil_hiver_gain_piece", "value": 19}, blocking=True,
+    )
+    assert manager.config["scenarios"]["winter"]["gain_room_below"] == 19
+    assert hass.states.get("number.volets_seuil_hiver_gain_exterieur") is not None
 
 
 def test_facade_window_stays_visible_after_the_last_window():

@@ -327,6 +327,9 @@ async def test_get_entities_returns_real_entity_ids(hass, setup, hass_ws_client)
     assert data["covers"][0]["cover"] == COVER
     assert data["covers"][0]["status"] == STATUS
     assert data["covers"][0]["switch"].startswith("switch.")
+    thresholds = {(t["scenario"], t["key"]): t["entity_id"] for t in data["thresholds"]}
+    assert thresholds[("summer", "close_outdoor")] == "number.volets_seuil_ete_fermeture_exterieur"
+    assert thresholds[("winter", "gain_room_below")] == "number.volets_seuil_hiver_gain_piece"
 
 
 @pytest.mark.real_http

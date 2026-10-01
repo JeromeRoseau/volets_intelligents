@@ -60,6 +60,14 @@ const I18N = {
     "ent.exCovers": "Tous les volets, par façade",
     "ent.exReasons": "Pourquoi chaque volet est dans son état",
     "ent.windowRow": "Fenêtre",
+    "ent.thresholds": "Seuils des scénarios",
+    "ent.thresholdsHelp": "Réglages modifiables depuis un tableau de bord : seuils de température de l'été (protection contre la chaleur) et de l'hiver (gain solaire).",
+    "ent.th.summer.close_outdoor": "Été : fermeture si extérieur ≥",
+    "ent.th.summer.close_room": "Été : fermeture si pièce ≥",
+    "ent.th.summer.open_outdoor": "Été : réouverture si extérieur ≤",
+    "ent.th.summer.open_room": "Été : réouverture si pièce ≤",
+    "ent.th.winter.gain_outdoor_below": "Hiver : gain solaire si extérieur <",
+    "ent.th.winter.gain_room_below": "Hiver : gain solaire si pièce <",
     "ent.reasonRow": "Pourquoi",
     "ent.window": "Plage active",
     "ent.windowActive": "Plage active en ce moment",
@@ -439,6 +447,14 @@ const I18N = {
     "ent.exCovers": "All shutters, by facade",
     "ent.exReasons": "Why each shutter is in its state",
     "ent.windowRow": "Window",
+    "ent.thresholds": "Scenario thresholds",
+    "ent.thresholdsHelp": "Settings that can be changed from a dashboard: summer (heat protection) and winter (solar gain) temperature thresholds.",
+    "ent.th.summer.close_outdoor": "Summer: close if outdoor ≥",
+    "ent.th.summer.close_room": "Summer: close if room ≥",
+    "ent.th.summer.open_outdoor": "Summer: reopen if outdoor ≤",
+    "ent.th.summer.open_room": "Summer: reopen if room ≤",
+    "ent.th.winter.gain_outdoor_below": "Winter: solar gain if outdoor <",
+    "ent.th.winter.gain_room_below": "Winter: solar gain if room <",
     "ent.reasonRow": "Why",
     "ent.window": "Active window",
     "ent.windowActive": "Active window right now",
@@ -2540,6 +2556,12 @@ class VoletsIntelligentsPanel extends HTMLElement {
       this._entityRow(this._t("ent.windowSunset"), w.sunset_offset, "minutes"),
       el("p", { class: "small muted", text: this._t("ent.windowHelp") }));
 
+    const thresholdsCard = el("section", { class: "card" },
+      el("h2", { text: this._t("ent.thresholds") }),
+      (map.thresholds || []).map((t) =>
+        this._entityRow(this._t(`ent.th.${t.scenario}.${t.key}`), t.entity_id, "temp")),
+      el("p", { class: "small muted", text: this._t("ent.thresholdsHelp") }));
+
     const facadeList = map.facades || [];
     const facadesCard = el("section", { class: "card" },
       el("h2", { text: this._t("ent.facades") }),
@@ -2618,7 +2640,7 @@ class VoletsIntelligentsPanel extends HTMLElement {
       covers.length ? this._yamlBlock(this._t("ent.exCovers"), coverYaml.join("\n")) : null,
       covers.some((c) => c.status) ? this._yamlBlock(this._t("ent.exReasons"), reasonLines.join("\n")) : null);
 
-    return [el("p", { class: "muted", text: this._t("ent.intro") }), globals, windowCard, facadesCard, perCover, examples, values];
+    return [el("p", { class: "muted", text: this._t("ent.intro") }), globals, windowCard, thresholdsCard, facadesCard, perCover, examples, values];
   }
 
   _settingsView() {

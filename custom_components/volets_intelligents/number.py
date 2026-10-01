@@ -20,19 +20,21 @@ async def async_setup_entry(
         [
             SunsetOffsetNumber(manager, entry.entry_id),
             *(
-                SummerThresholdNumber(manager, entry.entry_id, key, label)
-                for key, label in SUMMER_THRESHOLDS
+                ScenarioThresholdNumber(manager, entry.entry_id, scenario, key, label)
+                for scenario, key, label in SCENARIO_THRESHOLDS
             ),
         ]
     )
 
 
-SUMMER_SCENARIO = "summer"
-SUMMER_THRESHOLDS = (
-    ("close_outdoor", "fermeture extérieur"),
-    ("close_room", "fermeture pièce"),
-    ("open_outdoor", "réouverture extérieur"),
-    ("open_room", "réouverture pièce"),
+# (scénario, clé du seuil, libellé) : l'identifiant de l'entité en découle
+SCENARIO_THRESHOLDS = (
+    ("summer", "close_outdoor", "été fermeture extérieur"),
+    ("summer", "close_room", "été fermeture pièce"),
+    ("summer", "open_outdoor", "été réouverture extérieur"),
+    ("summer", "open_room", "été réouverture pièce"),
+    ("winter", "gain_outdoor_below", "hiver gain extérieur"),
+    ("winter", "gain_room_below", "hiver gain pièce"),
 )
 
 
@@ -59,8 +61,8 @@ class SunsetOffsetNumber(VoletsEntity, NumberEntity):
         await self.manager.async_set_window_setting("sunset_offset_minutes", int(value))
 
 
-class SummerThresholdNumber(VoletsEntity, NumberEntity):
-    """Seuil de température du scénario « summer » (protection contre la chaleur)."""
+class ScenarioThresholdNumber(VoletsEntity, NumberEntity):
+    """Seuil de température d'un scénario (été : protection contre la chaleur ; hiver : gain solaire)."""
 
     _attr_icon = "mdi:thermometer"
     _attr_native_min_value = 0
@@ -69,21 +71,24 @@ class SummerThresholdNumber(VoletsEntity, NumberEntity):
     _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
     _attr_mode = NumberMode.BOX
 
-    def __init__(self, manager: VoletsManager, entry_id: str, key: str, label: str) -> None:
+    def __init__(
+        self, manager: VoletsManager, entry_id: str, scenario: str, key: str, label: str
+    ) -> None:
         super().__init__(manager, entry_id)
+        self._scenario = scenario
         self._key = key
-        self._attr_name = f"Volets seuil été {label}"
-        self._attr_unique_id = f"{entry_id}_summer_{key}"
+        self._attr_name = f"Volets seuil {label}"
+        self._attr_unique_id = f"{entry_id}_{scenario}_{key}"
 
     @property
     def available(self) -> bool:
-        scenario = self.manager.config["scenarios"].get(SUMMER_SCENARIO)
+        scenario = self.manager.config["scenarios"].get(self._scenario)
         return bool(scenario and self._key in scenario)
 
     @property
     def native_value(self) -> float | None:
-        scenario = self.manager.config["scenarios"].get(SUMMER_SCENARIO) or {}
+        scenario = self.manager.config["scenarios"].get(self._scenario) or {}
         return scenario.get(self._key)
 
     async def async_set_native_value(self, value: float) -> None:
-        await self.manager.async_set_scenario_setting(SUMMER_SCENARIO, self._key, float(value))
+        await self.manager.async_set_scenario_setting(self._scenario, self._key, float(value))

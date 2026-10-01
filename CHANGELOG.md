@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.10
+
+- Nouvelles entités `number.volets_seuil_hiver_gain_exterieur` et `number.volets_seuil_hiver_gain_piece` (seuils du scénario « winter », gain solaire), modifiables depuis les dashboards, comme les seuils d'été.
+- Onglet « Entités » du panneau et README : liste des seuils des scénarios (identifiants réels, avec copie).
+
 ## 0.3.9
 
 - Capteurs `sensor.volets_facade_*_debut/fin` : les heures d'ensoleillement restent affichées toute la journée (plage en cours, sinon prochaine, sinon la dernière du jour), façade exposée ou non.
