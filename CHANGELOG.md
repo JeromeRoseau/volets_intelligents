@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.9
+
+- Capteurs `sensor.volets_facade_*_debut/fin` : les heures d'ensoleillement restent affichées toute la journée (plage en cours, sinon prochaine, sinon la dernière du jour), façade exposée ou non.
+
 ## 0.3.8
 
 - Tableau de bord du panneau : bouton « Auto » par volet pour activer/désactiver la gestion (commande WebSocket `set_enabled`).

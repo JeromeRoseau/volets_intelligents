@@ -390,13 +390,21 @@ class VoletsManager:
 
     @staticmethod
     def _next_window(now: datetime, windows: list[dict[str, str]]) -> dict[str, str | None]:
-        """Plage d'ensoleillement en cours, sinon la prochaine du jour (ISO), sinon rien."""
+        """Plage d'ensoleillement en cours, sinon la prochaine du jour, sinon la dernière du jour (ISO).
+
+        Les heures restent donc visibles toute la journée, façade exposée ou non ;
+        `None` seulement si la façade n'est jamais exposée ce jour-là.
+        """
+        found: tuple[datetime, datetime] | None = None
         for window in windows:
             start = datetime.combine(now.date(), _parse_hhmm(window["start"]), tzinfo=now.tzinfo)
             end = datetime.combine(now.date(), _parse_hhmm(window["end"]), tzinfo=now.tzinfo)
+            found = (start, end)
             if now < end:
-                return {"next_start": start.isoformat(), "next_end": end.isoformat()}
-        return {"next_start": None, "next_end": None}
+                break
+        if found is None:
+            return {"next_start": None, "next_end": None}
+        return {"next_start": found[0].isoformat(), "next_end": found[1].isoformat()}
 
     def _time_from_entity(self, entity_id: str | None) -> time | None:
         """Heure lue dans un état « HH:MM », « HH:MM:SS[.ffffff][±HH:MM] » ou datetime ISO."""

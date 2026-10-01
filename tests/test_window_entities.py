@@ -93,3 +93,18 @@ async def test_summer_thresholds_are_editable_from_entities(hass, setup):
     )
     assert manager.config["scenarios"]["summer"]["close_outdoor"] == 28
     assert float(hass.states.get("number.volets_seuil_ete_fermeture_exterieur").state) == 28
+
+
+def test_facade_window_stays_visible_after_the_last_window():
+    from datetime import datetime, timezone
+
+    from custom_components.volets_intelligents.manager import VoletsManager
+
+    windows = [{"start": "08:00", "end": "12:00"}, {"start": "14:00", "end": "16:00"}]
+    nxt = VoletsManager._next_window
+    tz = timezone.utc
+    assert nxt(datetime(2026, 7, 1, 7, 0, tzinfo=tz), windows)["next_start"].startswith("2026-07-01T08:00")
+    assert nxt(datetime(2026, 7, 1, 13, 0, tzinfo=tz), windows)["next_start"].startswith("2026-07-01T14:00")
+    after = nxt(datetime(2026, 7, 1, 20, 0, tzinfo=tz), windows)
+    assert after["next_start"].startswith("2026-07-01T14:00") and after["next_end"].startswith("2026-07-01T16:00")
+    assert nxt(datetime(2026, 7, 1, 20, 0, tzinfo=tz), []) == {"next_start": None, "next_end": None}

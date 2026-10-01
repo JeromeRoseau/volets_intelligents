@@ -117,7 +117,7 @@ Stockée dans `.storage/volets_intelligents.config`. Envoyée/reçue en entier p
       "exposed": true,         // exposée maintenant (météo comprise) ; null = capteur d'exposition indisponible (aucune action)
       "source": "sun",         // "sun" | "entity"
       "azimuth": 90.0,         // azimut effectif de la façade, orientation de la maison comprise
-      "next_start": "2026-09-30T08:10:00+02:00",  // plage d'ensoleillement en cours, sinon la prochaine du jour (ISO) ; null s'il n'y en a plus
+      "next_start": "2026-09-30T08:10:00+02:00",  // plage d'ensoleillement en cours, sinon la prochaine du jour, sinon la dernière du jour (ISO) ; null si la façade n'est jamais exposée ce jour-là
       "next_end": "2026-09-30T12:30:00+02:00",
       "windows": [ { "start": "08:10", "end": "12:30" } ]  // plages d'ensoleillement THÉORIQUES du jour (géométrie seule, sans météo), 0, 1 ou 2 plages
     }
