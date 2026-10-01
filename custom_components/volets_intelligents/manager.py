@@ -750,6 +750,17 @@ class VoletsManager:
         except ConfigError as err:
             raise HomeAssistantError(str(err)) from err
 
+    async def async_set_scenario_setting(self, scenario: str, key: str, value: Any) -> None:
+        """Modifie un seuil d'un scénario (ex. close_outdoor du scénario « summer »)."""
+        config = copy.deepcopy(self.config)
+        if scenario not in config["scenarios"]:
+            raise HomeAssistantError(f"Scénario inconnu : {scenario}")
+        config["scenarios"][scenario][key] = value
+        try:
+            await self.async_set_config(config)
+        except ConfigError as err:
+            raise HomeAssistantError(str(err)) from err
+
     async def async_set_cover_enabled(self, entity_id: str, enabled: bool) -> None:
         config = {**self.config, "covers": [dict(c) for c in self.config["covers"]]}
         for cover in config["covers"]:

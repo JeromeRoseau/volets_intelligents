@@ -64,6 +64,13 @@ async def test_real_frontend_registration(hass, hass_client, hass_ws_client):
     )
     res = await _result(ws, 6)
     assert not res["success"] and res["error"]["code"] == "command_failed"
+    await ws.send_json(
+        {"id": 7, "type": "volets_intelligents/command", "command": "set_enabled",
+         "entity_id": "cover.x", "enabled": False}
+    )
+    res = await _result(ws, 7)
+    assert res["success"], res
+    assert entry.runtime_data.config["covers"][0]["enabled"] is False
     assert await hass.config_entries.async_unload(entry.entry_id)
     await hass.async_block_till_done()
     assert "volets-intelligents" not in hass.data["frontend_panels"]
@@ -104,3 +111,15 @@ async def test_device_links_to_the_panel(hass):
     info = device_info("abc")
     assert info["configuration_url"] == "homeassistant://volets-intelligents"
     assert dr.CONFIGURATION_URL_SCHEMES >= {"homeassistant"}
+
+
+async def test_icon_is_served_for_entity_picture_override(hass, hass_client):
+    assert await async_setup_component(hass, "http", {})
+    assert await async_setup_component(hass, "frontend", {})
+    entry = MockConfigEntry(domain=DOMAIN, title="Volets Intelligents")
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    client = await hass_client()
+    resp = await client.get("/volets_intelligents_static/icon.png")
+    assert resp.status == 200 and resp.content_type == "image/png"

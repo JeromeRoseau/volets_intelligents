@@ -210,6 +210,8 @@ const I18N = {
     "dash.pause": "Pause",
     "dash.resume": "Reprendre",
     "dash.pauseAria": "Mettre en pause {name}",
+    "dash.auto": "Auto",
+    "dash.autoAria": "Gestion automatique de {name}",
     "dash.resumeAria": "Reprendre {name}",
 
     "fcard.exposed": "Exposée",
@@ -587,6 +589,8 @@ const I18N = {
     "dash.pause": "Pause",
     "dash.resume": "Resume",
     "dash.pauseAria": "Pause {name}",
+    "dash.auto": "Auto",
+    "dash.autoAria": "Automatic control of {name}",
     "dash.resumeAria": "Resume {name}",
 
     "fcard.exposed": "Sunlit",
@@ -1678,6 +1682,13 @@ class VoletsIntelligentsPanel extends HTMLElement {
             el("span", { text: this._t("dash.room", { value: this._num(c.room_temp, "°C") }) }),
             c.paused_until ? el("span", { text: this._t("dash.pausedUntil", { time: this._time(c.paused_until) }) }) : null)),
         el("div", { class: "cover-actions" }, arrows,
+          el("button", {
+            class: "chip-toggle", type: "button", text: this._t("dash.auto"),
+            "aria-pressed": String(c.enabled !== false), disabled: busyAll,
+            "aria-label": this._t("dash.autoAria", { name }),
+            onclick: () => this._command(
+              { command: "set_enabled", entity_id: c.entity_id, enabled: c.enabled === false }, `cover-${c.entity_id}`),
+          }),
           el("button", {
             class: "btn", type: "button", text: paused ? this._t("dash.resume") : this._t("dash.pause"),
             disabled: busyAll || c.enabled === false,

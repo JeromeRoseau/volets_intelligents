@@ -80,3 +80,16 @@ async def test_facade_entities_follow_config(hass, setup):
     await hass.async_block_till_done()
     assert hass.states.get("binary_sensor.volets_facade_sud_exposee") is None
     assert hass.states.get("sensor.volets_facade_sud_debut") is None
+
+
+async def test_summer_thresholds_are_editable_from_entities(hass, setup):
+    manager, _, _, _ = setup
+    await _refresh(hass, manager)
+    state = hass.states.get("number.volets_seuil_ete_fermeture_exterieur")
+    assert state is not None and float(state.state) == manager.config["scenarios"]["summer"]["close_outdoor"]
+    await hass.services.async_call(
+        "number", "set_value",
+        {"entity_id": "number.volets_seuil_ete_fermeture_exterieur", "value": 28}, blocking=True,
+    )
+    assert manager.config["scenarios"]["summer"]["close_outdoor"] == 28
+    assert float(hass.states.get("number.volets_seuil_ete_fermeture_exterieur").state) == 28

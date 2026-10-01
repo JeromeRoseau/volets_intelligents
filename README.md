@@ -59,6 +59,24 @@ latéral » permet de retirer l'entrée du menu. Le panneau reste accessible à 
 fourni dans cette même fenêtre) et par le bouton **Visiter** de la page de l'appareil « Volets Intelligents ». La carte
 Lovelace n'est pas concernée. Le changement recharge l'intégration (quelques secondes).
 
+### Icône dans la liste des mises à jour de HACS
+
+L'intégration fournit son icône et son logo (dossier `brand/`), que Home Assistant 2026.3 et plus affichent sur la page de
+l'intégration. HACS 2.0.5, lui, va chercher l'icône sur l'ancien serveur de logos de Home Assistant (qui n'a rien pour une
+intégration personnalisée) : « icon not available » s'affiche dans la liste des mises à jour tant que HACS n'est pas corrigé
+([hacs/integration#5171](https://github.com/hacs/integration/issues/5171)). En attendant, vous pouvez forcer l'image dans
+`configuration.yaml` (puis Outils de développement > YAML > Recharger la personnalisation, ou redémarrer) :
+
+```yaml
+homeassistant:
+  customize:
+    update.volets_intelligents_update:
+      entity_picture: /volets_intelligents_static/icon.png
+```
+
+L'identifiant `update.volets_intelligents_update` est celui créé par HACS ; vérifiez-le dans Paramètres > Entités si
+besoin. La liste des dépôts dans le panneau HACS lui-même garde son image par défaut.
+
 ### Premiers pas
 
 1. **Orientation de la maison** (Réglages) : vers quel azimut regarde votre façade « Sud » ? 180 si votre

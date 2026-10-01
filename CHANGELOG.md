@@ -1,6 +1,16 @@
 # Changelog
 
+## 0.3.8
+
+- Tableau de bord du panneau : bouton « Auto » par volet pour activer/désactiver la gestion (commande WebSocket `set_enabled`).
+- 4 entités `number.volets_seuil_ete_*` (fermeture/réouverture extérieur et pièce du scénario « summer »), modifiables depuis les dashboards.
+- Le lien de la fenêtre Configurer s'appelle désormais « Interface de gestion » (le bouton « Visiter » de la page de l'appareil
+  a un libellé fixe de Home Assistant, non modifiable par l'intégration ; l'entrée du menu latéral reste « Volets »).
+
 ## 0.3.7
+
+- `icon.png` servi à `/volets_intelligents_static/icon.png` : permet de forcer l'icône dans la liste des mises à jour de HACS
+  (voir le README), en attendant que HACS lise les icônes embarquées.
 
 - menu de configuration de l'intégration (Configurer) : case pour afficher ou masquer « Volets » dans le menu latéral,
   avec un lien direct vers le panneau ;

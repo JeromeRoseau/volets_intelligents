@@ -191,6 +191,7 @@ Commandes (`command`) :
 - `set_scenario` : `value` ∈ clés de `scenarios`
 - `pause` : `entity_id` (optionnel = tous), `minutes` (défaut = override_pause_minutes)
 - `resume` : `entity_id` (optionnel = tous)
+- `set_enabled` : `entity_id` (requis), `enabled` (booléen requis) — active/désactive la gestion du volet (équivaut à `switch.volets_*_auto`)
 - `evaluate` : force une évaluation immédiate
 
 Côté frontend : `hass.callWS({type: "volets_intelligents/get_config"})` et

@@ -177,10 +177,11 @@ def ws_subscribe_status(hass: HomeAssistant, connection, msg: dict[str, Any]) ->
     {
         vol.Required("type"): f"{DOMAIN}/command",
         vol.Required("command"): vol.In(
-            ("set_mode", "set_scenario", "pause", "resume", "evaluate")
+            ("set_mode", "set_scenario", "pause", "resume", "evaluate", "set_enabled")
         ),
         vol.Optional("value"): str,
         vol.Optional("entity_id"): str,
+        vol.Optional("enabled"): bool,
         vol.Optional("minutes"): vol.All(int, vol.Range(min=1, max=1440)),
     }
 )
@@ -197,7 +198,7 @@ async def ws_command(hass: HomeAssistant, connection, msg: dict[str, Any]) -> No
         _check_control(connection, [_select_entity_id(hass, manager, "mode")])
     elif command == "set_scenario":
         _check_control(connection, [_select_entity_id(hass, manager, "scenario")])
-    elif command in ("pause", "resume"):
+    elif command in ("pause", "resume", "set_enabled"):
         _check_control(connection, targets or sorted(manager.runtime_keys()))
     try:
         if command == "set_mode":
@@ -208,6 +209,10 @@ async def ws_command(hass: HomeAssistant, connection, msg: dict[str, Any]) -> No
             await manager.async_pause(targets, msg.get("minutes"))
         elif command == "resume":
             await manager.async_resume(targets)
+        elif command == "set_enabled":
+            if not msg.get("entity_id") or "enabled" not in msg:
+                raise HomeAssistantError("entity_id et enabled sont requis")
+            await manager.async_set_cover_enabled(msg["entity_id"], msg["enabled"])
         else:
             await manager.async_evaluate()
     except HomeAssistantError as err:

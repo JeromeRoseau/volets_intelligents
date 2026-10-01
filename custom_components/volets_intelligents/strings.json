@@ -13,7 +13,7 @@
       "step": {
         "init": {
           "title": "Volets Intelligents",
-          "description": "Le panneau de pilotage est accessible ici : [Ouvrir le panneau Volets]({panel_url}). Même masqué dans le menu latéral, il reste accessible à cette adresse, et depuis la page de l'appareil (bouton « Visiter »).",
+          "description": "Le panneau de pilotage est accessible ici : [Interface de gestion]({panel_url}). Même masqué dans le menu latéral, il reste accessible à cette adresse, et depuis la page de l'appareil (bouton « Visiter »).",
           "data": {
             "show_sidebar": "Afficher « Volets » dans le menu latéral"
           },
