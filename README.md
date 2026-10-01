@@ -4,8 +4,6 @@ Intégration Home Assistant (HACS) qui protège la maison de la chaleur en pilot
 selon le soleil, les températures et l'activité des habitants, avec un **panneau de gestion
 graphique** et une **carte Lovelace**. Aucun YAML à écrire.
 
-> Version 0.3.3, non testée sur un Home Assistant réel : démarrez avec un ou deux volets non critiques.
-
 ## Ce que fait l'intégration
 
 - **Protection thermique (scénario Été)** : un volet s'abaisse à la position voulue quand sa façade
