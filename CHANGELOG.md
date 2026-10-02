@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026.10.3
+
+- Panneau : nouvel ordre des onglets : Tableau de bord, Scénarios, Volets, Façades, Réglages, Entités (README FR et EN alignés).
+- Panneau, fiche d'un volet : avec la méthode de fermeture « bouton », un message sous « Position de fermeture (protégé) » rappelle de régler la même position que celle atteinte par le bouton favori (le champ reste modifiable).
+- Correction : avec la méthode de fermeture « bouton », la protection ne fonctionnait pas correctement. Le volet est maintenant reconnu comme protégé dès qu'il est nettement abaissé (sans comparer à la « position de fermeture »), ou, s'il ne rapporte aucune position, d'après l'ordre envoyé par l'intégration. Un mouvement tardif du volet dans les 10 minutes suivant l'appui n'est plus pris pour une action manuelle.
+
 ## 2026.10.2
 
 - Nouvelle option d'intégration « Personnes désignées » : des comptes non administrateurs choisis ont accès à tous les onglets du panneau et peuvent tout modifier (contrôlé côté serveur) ; les autres comptes non admin ne voient que le Tableau de bord. Nouvelle commande WebSocket `get_access`.

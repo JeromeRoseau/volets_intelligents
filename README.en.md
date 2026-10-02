@@ -162,16 +162,21 @@ needed. The repository list in the HACS panel itself keeps its default image.
 | Tab | Content |
 |---|---|
 | Dashboard | Global mode, scenario, temperatures, active window, state of each shutter, pause and resume. |
+| Scenarios | Thresholds and conditions of each scenario, alarm options. |
 | Shutters | Shutter list: facade, protection position, method, room temperature, windows. |
 | Facades | Orientation, lighting angle, horizon mask, the day's sunshine windows. |
-| Scenarios | Thresholds and conditions of each scenario, alarm options. |
 | Settings | Outdoor sensors, active window, manual pause, wind, alarm, weather, JSON import and export. |
+| Entities | Real identifiers of the integration's entities, ready-to-copy YAML examples, values of the modes and scenarios. |
 
 The screenshots below use demonstration data.
 
 ### Dashboard
 
 ![Dashboard](docs/screenshots/en/dashboard.png)
+
+### Scenarios
+
+![Scenarios](docs/screenshots/en/scenarios.png)
 
 ### Shutters
 
@@ -181,17 +186,13 @@ The screenshots below use demonstration data.
 
 ![Facades](docs/screenshots/en/facades.png)
 
-### Scenarios
+### Settings
 
-![Scenarios](docs/screenshots/en/scenarios.png)
+![Settings](docs/screenshots/en/settings.png)
 
 ### Entities
 
 ![Entities](docs/screenshots/en/entities.png)
-
-### Settings
-
-![Settings](docs/screenshots/en/settings.png)
 
 ### How the sun is computed
 

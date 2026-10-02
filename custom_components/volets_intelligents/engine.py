@@ -15,6 +15,7 @@ from typing import Any
 from .const import (
     ACTION_CLOSE,
     ACTION_OPEN,
+    CLOSE_BUTTON,
     CLOSE_FULL,
     KIND_GAIN,
     KIND_HEAT,
@@ -215,9 +216,18 @@ def _decide(cover: dict[str, Any], inp: CoverInputs, rt: CoverRuntime, env: Env)
     if env.grace_active:
         return Decision(ST_GRACE, "Délai de sécurité après le démarrage")
 
-    shaded_now = is_shaded(cover, inp, env.tolerance)
-    # Un drapeau « protégé par nous » n'a de sens que si le volet est réellement abaissé.
-    shaded_by_us = rt.shaded_by_us and is_lowered(cover, inp, env.tolerance)
+    if cover["close_method"] == CLOSE_BUTTON:
+        # Bouton favori : la position atteinte est celle programmée sur le bouton, pas
+        # `close_position`. Le volet est « protégé » dès qu'il est nettement abaissé ; s'il ne
+        # rapporte aucune position, on fait confiance à notre propre mémoire de l'ordre envoyé.
+        lowered = is_lowered(cover, inp, env.tolerance)
+        no_feedback = inp.position is None
+        shaded_now = lowered or (no_feedback and rt.shaded_by_us)
+        shaded_by_us = rt.shaded_by_us and (lowered or no_feedback)
+    else:
+        shaded_now = is_shaded(cover, inp, env.tolerance)
+        # Un drapeau « protégé par nous » n'a de sens que si le volet est réellement abaissé.
+        shaded_by_us = rt.shaded_by_us and is_lowered(cover, inp, env.tolerance)
 
     if rt.paused_until is not None and env.now < rt.paused_until:
         until = rt.paused_until.strftime("%H:%M")

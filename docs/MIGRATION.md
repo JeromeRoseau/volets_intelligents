@@ -32,7 +32,7 @@ piloter les mêmes volets en même temps.
 
 ## Procédure conseillée
 
-1. Installez l'intégration et importez `examples/config-jerome.json` (Réglages > Sauvegarde et import).
+1. Installez l'intégration et configurez vos volets et façades dans le panneau.
 2. Dans l'onglet Volets, laissez `enabled` actif sur un ou deux volets seulement.
 3. Mettez `automation.volets_thermique` en pause (désactivée) seulement pour ces volets, ou
    désactivez les `input_boolean.auto_volet_*` correspondants le temps du test.

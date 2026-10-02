@@ -249,6 +249,14 @@ class VoletsManager:
             # Volet lent : la suite d'un mouvement que nous avons commandé n'est pas manuelle.
             if old.state in _MOVING_STATES and elapsed < MOTION_GRACE_SECONDS:
                 return
+            # Bouton favori : le volet peut mettre longtemps (ou ne rapporter qu'en fin de course)
+            # à refléter l'ordre, sans passer par un état « en mouvement ».
+            if (
+                cover["close_method"] == CLOSE_BUTTON
+                and rt.last_action == ACTION_CLOSE
+                and elapsed < MOTION_GRACE_SECONDS
+            ):
+                return
         if self.mode != MODE_AUTO:
             return
         if not self._last_in_window and not rt.shaded_by_us:

@@ -163,16 +163,21 @@ besoin. La liste des dépôts dans le panneau HACS lui-même garde son image par
 | Onglet | Contenu |
 |---|---|
 | Tableau de bord | Mode global, scénario, températures, plage active, état de chaque volet, pause et reprise. |
+| Scénarios | Seuils et conditions de chaque scénario, options d'alarme. |
 | Volets | Liste des volets : façade, position de protection, méthode, température de la pièce, fenêtres. |
 | Façades | Orientation, angle d'éclairage, masque d'horizon, plages d'ensoleillement du jour. |
-| Scénarios | Seuils et conditions de chaque scénario, options d'alarme. |
 | Réglages | Capteurs extérieurs, plage active, pause manuelle, vent, alarme, météo, import et export JSON. |
+| Entités | Identifiants réels des entités de l'intégration, exemples YAML prêts à copier, valeurs des modes et scénarios. |
 
 Les captures ci-dessous utilisent des données de démonstration.
 
 ### Tableau de bord
 
 ![Tableau de bord](docs/screenshots/tableau-de-bord.png)
+
+### Scénarios
+
+![Scénarios](docs/screenshots/scenarios.png)
 
 ### Volets
 
@@ -182,17 +187,13 @@ Les captures ci-dessous utilisent des données de démonstration.
 
 ![Façades](docs/screenshots/facades.png)
 
-### Scénarios
+### Réglages
 
-![Scénarios](docs/screenshots/scenarios.png)
+![Réglages](docs/screenshots/reglages.png)
 
 ### Entités
 
 ![Entités](docs/screenshots/entites.png)
-
-### Réglages
-
-![Réglages](docs/screenshots/reglages.png)
 
 ### Comment le soleil est calculé
 

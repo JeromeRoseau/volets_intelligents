@@ -267,6 +267,7 @@ const I18N = {
     "covers.closeMethod": "Méthode de fermeture",
     "covers.buttonEntity": "Entité bouton (fermeture)",
     "covers.closePosition": "Position de fermeture (protégé)",
+    "covers.closePositionButtonHelp": "Méthode « bouton » : réglez ici la même position que celle atteinte par le bouton favori (la protection doit être équivalente à l'action du bouton).",
     "covers.openPosition": "Position d'ouverture",
     "covers.roomTemp": "Température de la pièce",
     "covers.windows": "Fenêtres / portes (capteurs d'ouverture)",
@@ -679,6 +680,7 @@ const I18N = {
     "covers.closeMethod": "Closing method",
     "covers.buttonEntity": "Button entity (closing)",
     "covers.closePosition": "Closing position (protected)",
+    "covers.closePositionButtonHelp": "\"Button\" method: set here the same position the favorite button reaches (the protection must match what the button does).",
     "covers.openPosition": "Opening position",
     "covers.roomTemp": "Room temperature",
     "covers.windows": "Windows / doors (opening sensors)",
@@ -850,7 +852,7 @@ function translate(lang, key, vars) {
 /* Constantes                                                          */
 /* ------------------------------------------------------------------ */
 
-const TAB_IDS = ["dashboard", "covers", "facades", "scenarios", "entities", "settings"];
+const TAB_IDS = ["dashboard", "scenarios", "covers", "facades", "settings", "entities"];
 const MODE_IDS = ["auto", "manual", "off"];
 const SCENARIO_IDS = ["summer", "winter", "vacation", "off"];
 const ORIENTATIONS = ["north", "east", "south", "west"];
@@ -2119,7 +2121,15 @@ class VoletsIntelligentsPanel extends HTMLElement {
 
     const buttonField = this._field(this._t("covers.buttonEntity"),
       this._text(cover, "button_entity", { list: "vi-dl-button", placeholder: "button.…" }));
-    const syncMethod = () => { buttonField.hidden = cover.close_method !== "button"; };
+    const closePosField = this._field(this._t("covers.closePosition"), this._range(cover, "close_position"),
+      this._t("covers.closePositionButtonHelp"));
+    const closePosHelp = closePosField.querySelector(".help");
+    const syncMethod = () => {
+      const isButton = cover.close_method === "button";
+      buttonField.hidden = !isButton;
+      // Méthode « bouton » : le champ reste modifiable, un message rappelle de l'aligner sur le bouton.
+      if (closePosHelp) closePosHelp.hidden = !isButton;
+    };
 
     const nameInput = this._text(cover, "name", { nullable: false, placeholder: this._t("covers.namePlaceholder") });
     nameInput.addEventListener("input", refresh);
@@ -2168,7 +2178,7 @@ class VoletsIntelligentsPanel extends HTMLElement {
           this._field(this._t("covers.closeMethod"),
             this._select(cover, "close_method", CLOSE_METHODS.map((m) => [m, this._t(`method.${m}`)]), syncMethod)),
           buttonField,
-          this._field(this._t("covers.closePosition"), this._range(cover, "close_position")),
+          closePosField,
           this._field(this._t("covers.openPosition"), this._range(cover, "open_position")),
           this._field(this._t("covers.roomTemp"), this._text(cover, "room_temp_entity",
             { list: "vi-dl-sensor", placeholder: "sensor.…" })),

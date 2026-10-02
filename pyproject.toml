@@ -1,8 +1,3 @@
-[tool.pytest.ini_options]
-asyncio_mode = "auto"
-testpaths = ["tests"]
-markers = ["real_http: démarre le vrai serveur HTTP (tests WebSocket)"]
-
 [tool.ruff]
 line-length = 100
 target-version = "py313"
