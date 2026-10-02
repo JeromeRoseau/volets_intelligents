@@ -10,34 +10,67 @@ graphique** et une **carte Lovelace**. Aucun YAML à écrire.
 
 ## Ce que fait l'intégration
 
+### Protection et scénarios
+
 - **Protection thermique (scénario Été)** : un volet s'abaisse à la position voulue quand sa façade
   reçoit le soleil ET qu'il fait chaud dehors ou dans la pièce. Il remonte quand le soleil quitte
   la façade ou que les températures sont redescendues.
-- **Hystérésis** : seuils de fermeture et d'ouverture distincts, plus un intervalle minimal entre
-  deux mouvements (anti-usure).
+- **Hystérésis** : seuils de fermeture et de réouverture distincts (extérieur et pièce), plus un intervalle
+  minimal entre deux mouvements (anti-usure).
+- **Quatre scénarios** : **Été** (protège de la chaleur), **Hiver** (gain solaire : rouvre un volet fermé et
+  ensoleillé quand la pièce et l'extérieur sont frais, ne ferme jamais), **Vacances** (ferme dès qu'une façade
+  est exposée, sans condition de température) et **Désactivé** (aucune action liée au soleil). Choix manuel, ou
+  automatique selon le mois. Chaque scénario est décrit sous son sélecteur dans le panneau.
+- **Hiver : option alarme** : case « Ne pas ouvrir les volets quand l'alarme est activée » (onglet Scénarios) avec
+  le choix de l'entité `alarm_control_panel`. Tant que l'alarme est armée (`armed_*`) ou déclenchée, le gain solaire
+  est suspendu. Entité absente ou indisponible : rien n'est bloqué. Option désactivée par défaut.
+- **Seuils en entités** : les seuils de chaque scénario (Été : fermeture et réouverture, extérieur et pièce ;
+  Hiver : gain solaire extérieur et pièce) sont des entités `number` modifiables depuis vos tableaux de bord.
+- **Météo** : un ciel couvert peut neutraliser l'effet du soleil.
+
+### Modes de pilotage
+
+- **Automatique** : le moteur décide et envoie les ordres aux volets.
+- **Manuel** : aucun ordre n'est envoyé, vous pilotez vous-même ; les volets affichent « Mode manuel ».
+- **Arrêt** : aucune décision ni aucun ordre.
+
+La sécurité vent reste prioritaire dans les trois modes. Chaque mode est décrit sous son sélecteur dans le panneau.
+
+### Plage active
+
+- **Plage horaire de gestion** : heure de début et heure de fin réglables. La fin peut être une **heure fixe**,
+  le **coucher du soleil avec un décalage** en minutes (avant ou après), ou **lue dans une entité** (`sensor`,
+  `input_datetime`, `input_text`).
+- Réglable depuis le panneau et depuis vos tableaux de bord (entités `time`, `select` et `number` de la plage).
+
+### Façades et soleil
+
 - **Quatre façades, orientation de la maison** : nord, est, sud, ouest par défaut (renommables,
   supprimables, on peut en ajouter). Vous indiquez vers où regarde la façade que vous appelez « Sud » :
   toutes les façades tournent avec elle. Chaque volet est affecté à la façade de votre choix.
 - **Soleil calculé selon le jour** : l'exposition de chaque façade est calculée avec la date, l'heure et
   la position GPS de Home Assistant (azimut et hauteur du soleil), donc elle suit les saisons sans
   aucun capteur. Réglages par façade : angle d'éclairage et hauteur minimale du soleil (arbres,
-  voisins). Les plages d'ensoleillement du jour sont affichées pour chaque façade. Vous pouvez aussi
-  utiliser un capteur existant (par exemple `binary_sensor.volets_exposition_*`).
+  voisins). Vous pouvez aussi utiliser un capteur existant (par exemple `binary_sensor.volets_exposition_*`).
+- **Plages d'ensoleillement toute la journée** : les capteurs de façade (`sensor.volets_facade_*_debut/fin`)
+  gardent leur valeur toute la journée (plage en cours, sinon la prochaine, sinon la dernière du jour), que la
+  façade soit exposée ou non.
+
+### Pilotage de chaque volet
+
+- **Bouton « Auto » par volet** : dans le tableau de bord du panneau, un clic active ou désactive la gestion
+  automatique d'un volet. C'est l'équivalent de l'entité `switch.volets_*_auto`.
 - **Position voulue par volet** : chaque volet a sa propre position de protection (pourcentage,
   bouton « position favorite » ou fermeture complète).
 - **Pause automatique après action manuelle** : si vous bougez un volet à la main, il est laissé
-  tranquille pendant la durée choisie (ou jusqu'à la fin de la plage active).
+  tranquille pendant la durée choisie (ou jusqu'à la fin de la plage active). Le statut « En pause » est
+  distinct d'un volet dont la gestion est désactivée.
 - **Fenêtre ou porte ouverte** : la fermeture est bloquée (utile pour les portes-fenêtres). Un capteur de
   fenêtre indisponible compte comme « ouvert » : on ne prend pas le risque d'enfermer quelqu'un dehors.
 - **Vent** (stores et bannes) : mise en sécurité automatique au-delà d'un seuil, avec hystérésis. Elle est
   prioritaire sur le mode (même « manuel » ou « arrêté »), le scénario, la pause et le délai de démarrage ;
   seul un volet dont la gestion automatique est désactivée y échappe. Pour chaque volet, choisissez l'ordre
   qui le met en sécurité : « ouvrir » (volet roulant remonté) ou « fermer » (store ou banne rentré).
-- **Météo** : un ciel couvert peut neutraliser l'effet du soleil.
-- **Scénarios** : Été (protection), Hiver (ouvre pour profiter du soleil quand la pièce est fraîche, avec l'option de ne pas ouvrir quand l'alarme est activée),
-  Vacances (protège dès qu'il y a du soleil), Désactivé. Choix manuel ou automatique selon le mois.
-- **Sécurités** : délai après redémarrage, aucune action si la température extérieure ou le capteur
-  d'exposition est indisponible.
 - **Volet fermé à 100 %, jamais remonté** : un volet fermé à 100 % n'est pas remonté par l'intégration, quelle que
   soit la façon dont il a été fermé (à la main, par une autre automatisation, par l'intégration elle-même). Option par
   volet pour lever cette règle dans le ou les scénarios de votre choix (Été, Hiver, Vacances). Seule exception : un
@@ -45,7 +78,19 @@ graphique** et une **carte Lovelace**. Aucun YAML à écrire.
   est remonté, sinon sa protection ne se terminerait jamais. « Fermé à 100 % » veut dire position 0 % rapportée par le
   volet, ou état « fermé » pour un volet sans position. La règle vaut aussi pour la protection contre le vent
   (un volet fermé est déjà à l'abri).
+
+### Sécurités et transparence
+
+- **Sécurités** : délai après redémarrage, aucune action si la température extérieure ou le capteur
+  d'exposition est indisponible.
 - **Transparence** : chaque volet affiche en français pourquoi il est dans son état.
+
+### Panneau et tableaux de bord
+
+- **Panneau de gestion** (« Interface de gestion » depuis la fenêtre Configurer) : six onglets, voir plus bas.
+- **Entités pour vos tableaux de bord** : mode, scénario, seuils, plage active, façades, et un interrupteur
+  « Auto » et un statut par volet. L'onglet « Entités » du panneau liste les identifiants réels, avec des
+  exemples prêts à copier.
 
 ## Installation
 
