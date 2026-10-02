@@ -18,6 +18,7 @@ Stockée dans `.storage/volets_intelligents.config`. Envoyée/reçue en entier p
     "weather_entity": null,            // str|null (weather.*)
     "sunny_conditions": ["sunny", "partlycloudy"], // conditions météo où le soleil "compte"; [] = désactivé
     "wind_entity": null,               // str|null (sensor, vitesse du vent)
+    "alarm_entity": null,              // str|null (alarm_control_panel) ; « activée » = état armed_* ou triggered
     "wind_threshold": 50,              // nombre, même unité que le capteur
     "wind_release_ratio": 0.8,         // 0.1–1.0, relâche quand vent < seuil × ratio
     "evaluation_interval_minutes": 5,  // 1–60
@@ -43,12 +44,16 @@ Stockée dans `.storage/volets_intelligents.config`. Envoyée/reçue en entier p
     "summer":   { "label": "Été",      "kind": "heat_protection",
                   "close_outdoor": 25, "close_room": 24,
                   "open_outdoor": 22,  "open_room": 22,
-                  "release_mode": "all" },            // "all" | "any"
+                  "release_mode": "all",              // réouverture : "all" (pièce ET ext.) | "any" (pièce OU ext.) | "room" | "outdoor"
+                  "block_open_alarm": false,          // true : pas d'ouverture automatique si l'alarme est activée
+                  "block_open_alarm_window": false }, // true : idem, mais seulement si une fenêtre du volet est ouverte
     "winter":   { "label": "Hiver",    "kind": "solar_gain",
                   "gain_room_below": 20, "gain_outdoor_below": 15,
-                  "block_when_alarm": false,            // true : ne pas ouvrir tant que l'alarme est activée
-                  "alarm_entity": null },               // str|null (alarm_control_panel)
-    "vacation": { "label": "Vacances", "kind": "hold_shaded" },
+                  "gain_condition": "both",             // "both" (pièce ET extérieur) | "room" | "outdoor"
+                  "block_open_alarm": false,
+                  "block_open_alarm_window": false },
+    "vacation": { "label": "Vacances", "kind": "hold_shaded",
+                  "block_open_alarm": false, "block_open_alarm_window": false },
     "off":      { "label": "Désactivé","kind": "off" }
   },
   "facades": [

@@ -186,9 +186,8 @@ class VoletsManager:
                 entities.add(s[key])
         if s["window"]["end_mode"] == END_ENTITY and s["window"]["end_entity"]:
             entities.add(s["window"]["end_entity"])
-        for scenario in self.config["scenarios"].values():
-            if scenario.get("alarm_entity"):
-                entities.add(scenario["alarm_entity"])
+        if s["alarm_entity"]:
+            entities.add(s["alarm_entity"])
         for facade in self.config["facades"]:
             if facade["exposure"]["entity"]:
                 entities.add(facade["exposure"]["entity"])
@@ -303,15 +302,15 @@ class VoletsManager:
                 self._wind_exceeded = False
         return wind, self._wind_exceeded
 
-    def _alarm_armed(self, scenario: dict[str, Any]) -> bool:
-        """True si le scénario demande de respecter l'alarme et qu'elle est activée.
+    def _alarm_armed(self) -> bool:
+        """True si l'alarme est activée : état `armed_*` (away, home, night, vacation, custom_bypass) ou `triggered`.
 
-        « Activée » = un état `armed_*` (away, home, night, vacation, custom_bypass) ou `triggered`.
-        Entité absente ou indisponible : on ne bloque pas.
+        Entité non configurée, absente ou indisponible : on considère l'alarme non activée.
         """
-        if not scenario.get("block_when_alarm") or not scenario.get("alarm_entity"):
+        entity = self.config["settings"]["alarm_entity"]
+        if not entity:
             return False
-        state = self.hass.states.get(scenario["alarm_entity"])
+        state = self.hass.states.get(entity)
         if state is None or state.state in _INVALID:
             return False
         return state.state.startswith("armed_") or state.state == "triggered"
@@ -504,7 +503,7 @@ class VoletsManager:
             grace_active=grace,
             outdoor=outdoor,
             wind_exceeded=wind_exceeded,
-            alarm_armed=self._alarm_armed(scenario),
+            alarm_armed=self._alarm_armed(),
             tolerance=settings["position_tolerance"],
             min_move=timedelta(minutes=settings["min_move_interval_minutes"]),
         )

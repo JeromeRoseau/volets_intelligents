@@ -168,6 +168,17 @@ def decide(cover: dict[str, Any], inp: CoverInputs, rt: CoverRuntime, env: Env) 
     est bien remonté, sinon la protection ne se terminerait jamais.
     """
     decision = _decide(cover, inp, rt, env)
+    if decision.action == ACTION_OPEN and not decision.plain and env.alarm_armed:
+        sc = env.scenario
+        if sc.get("block_open_alarm"):
+            return Decision(
+                decision.status, "Alarme activée : le volet n'est pas ouvert (réglage du scénario)"
+            )
+        if sc.get("block_open_alarm_window") and inp.window_open:
+            return Decision(
+                decision.status,
+                "Alarme activée et fenêtre ouverte : le volet n'est pas ouvert (réglage du scénario)",
+            )
     if (
         decision.action == ACTION_OPEN
         and is_fully_closed(inp)
@@ -295,8 +306,13 @@ def _heat(
         )
 
     # Volet protégé par nous : faut-il le relâcher ?
-    if sc["release_mode"] == "any":
+    mode = sc["release_mode"]
+    if mode == "any":
         cooled = outdoor < sc["open_outdoor"] or (room is not None and room < sc["open_room"])
+    elif mode == "room":
+        cooled = room is not None and room < sc["open_room"]
+    elif mode == "outdoor":
+        cooled = outdoor < sc["open_outdoor"]
     else:
         cooled = outdoor < sc["open_outdoor"] and (room is None or room < sc["open_room"])
     if not inp.exposed:
@@ -331,19 +347,20 @@ def _gain(cover: dict[str, Any], inp: CoverInputs, rt: CoverRuntime, env: Env) -
     sc = env.scenario
     outdoor = env.outdoor
     room = inp.room_temp
-    if outdoor is None:
+    condition = sc.get("gain_condition", "both")
+    if outdoor is None and condition != "room":
         return Decision(ST_NO_DATA, "Température extérieure indisponible : aucune action")
     if not inp.exposed:
         return Decision(ST_WATCHING, _exposure_text(inp))
     cold_room = room is not None and room < sc["gain_room_below"]
-    cold_out = outdoor < sc["gain_outdoor_below"]
-    if cold_room and cold_out and not is_open(cover, inp, env.tolerance):
-        if env.alarm_armed:
-            return Decision(
-                ST_WATCHING,
-                f"{_exposure_text(inp)} et pièce fraîche, mais l'alarme est activée : "
-                "le volet reste fermé",
-            )
+    cold_out = outdoor is not None and outdoor < sc["gain_outdoor_below"]
+    if condition == "room":
+        wants_open = cold_room
+    elif condition == "outdoor":
+        wants_open = cold_out
+    else:
+        wants_open = cold_room and cold_out
+    if wants_open and not is_open(cover, inp, env.tolerance):
         if _cooldown(rt, env):
             return Decision(ST_COOLDOWN, "Attente de l'intervalle minimal entre deux mouvements")
         return Decision(

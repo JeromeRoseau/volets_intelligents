@@ -1,5 +1,7 @@
 # Volets Intelligents
 
+**Français** · [English](README.en.md)
+
 Intégration Home Assistant (HACS) qui protège la maison de la chaleur en pilotant les volets
 selon le soleil, les températures et l'activité des habitants, avec un **panneau de gestion
 graphique** et une **carte Lovelace**. Aucun YAML à écrire.
@@ -17,13 +19,24 @@ graphique** et une **carte Lovelace**. Aucun YAML à écrire.
   la façade ou que les températures sont redescendues.
 - **Hystérésis** : seuils de fermeture et de réouverture distincts (extérieur et pièce), plus un intervalle
   minimal entre deux mouvements (anti-usure).
+- **Condition de réouverture (Été)** : le volet protégé se rouvre quand **pièce ET extérieur** sont redescendus sous
+  leurs seuils (recommandé), quand **pièce OU extérieur** l'est, ou selon **la pièce seulement** ou **l'extérieur
+  seulement** (l'autre seuil est alors ignoré).
 - **Quatre scénarios** : **Été** (protège de la chaleur), **Hiver** (gain solaire : rouvre un volet fermé et
-  ensoleillé quand la pièce et l'extérieur sont frais, ne ferme jamais), **Vacances** (ferme dès qu'une façade
-  est exposée, sans condition de température) et **Désactivé** (aucune action liée au soleil). Choix manuel, ou
-  automatique selon le mois. Chaque scénario est décrit sous son sélecteur dans le panneau.
-- **Hiver : option alarme** : case « Ne pas ouvrir les volets quand l'alarme est activée » (onglet Scénarios) avec
-  le choix de l'entité `alarm_control_panel`. Tant que l'alarme est armée (`armed_*`) ou déclenchée, le gain solaire
-  est suspendu. Entité absente ou indisponible : rien n'est bloqué. Option désactivée par défaut.
+  ensoleillé quand il fait frais, ne ferme jamais), **Vacances** (ferme dès qu'une façade est exposée, sans
+  condition de température) et **Désactivé** (aucune action liée au soleil). Choix manuel, ou automatique selon
+  le mois. Chaque scénario est décrit sous son sélecteur dans le panneau.
+- **Condition d'ouverture (Hiver)** : au choix, la **pièce ET l'extérieur** sous leurs seuils (par défaut), la
+  **pièce seulement** ou l'**extérieur seulement** (l'autre seuil est alors ignoré). Réglage dans l'onglet Scénarios.
+- **Alarme** : choisissez une entité `alarm_control_panel` (Réglages). Chaque scénario d'action (Été, Hiver,
+  Vacances) propose deux options, indépendantes :
+  - « **Ne pas ouvrir quand l'alarme est activée** » : aucune ouverture automatique tant que l'alarme est armée
+    (états `armed_*`) ou déclenchée ;
+  - « **Ne pas ouvrir quand l'alarme est activée ET qu'une fenêtre est ouverte** » : même chose, mais seulement
+    pour un volet dont une fenêtre ou porte est ouverte (ou dont le capteur est indisponible).
+
+  Sans entité d'alarme, ou si elle est indisponible, rien n'est bloqué. La mise en sécurité contre le vent n'est
+  jamais bloquée par l'alarme. Les deux options sont désactivées par défaut.
 - **Seuils en entités** : les seuils de chaque scénario (Été : fermeture et réouverture, extérieur et pièce ;
   Hiver : gain solaire extérieur et pièce) sont des entités `number` modifiables depuis vos tableaux de bord.
 - **Météo** : un ciel couvert peut neutraliser l'effet du soleil.
@@ -141,8 +154,8 @@ besoin. La liste des dépôts dans le panneau HACS lui-même garde son image par
 | Tableau de bord | Mode global, scénario, températures, plage active, état de chaque volet, pause et reprise. |
 | Volets | Liste des volets : façade, position de protection, méthode, température de la pièce, fenêtres. |
 | Façades | Orientation, angle d'éclairage, masque d'horizon, plages d'ensoleillement du jour. |
-| Scénarios | Seuils de chaque scénario ; en Hiver, option pour ne pas ouvrir quand l'alarme est activée. |
-| Réglages | Capteurs extérieurs, plage active, pause manuelle, vent, météo, import et export JSON. |
+| Scénarios | Seuils et conditions de chaque scénario, options d'alarme. |
+| Réglages | Capteurs extérieurs, plage active, pause manuelle, vent, alarme, météo, import et export JSON. |
 
 Les captures ci-dessous utilisent des données de démonstration.
 
@@ -191,7 +204,9 @@ Un volet **protégé par l'intégration** remonte si la façade n'est plus expos
 
 - `all` (recommandé) : extérieur sous le seuil d'ouverture ET pièce sous le seuil d'ouverture. Évite
   que la pièce, refroidie par le volet fermé, le fasse rouvrir en plein soleil.
-- `any` : comportement de l'ancienne automatisation, un seul des deux suffit.
+- `any` : comportement de l'ancienne automatisation, un seul des deux suffit (extérieur OU pièce).
+- `room` : seule la pièce compte (sous son seuil d'ouverture).
+- `outdoor` : seul l'extérieur compte (sous son seuil d'ouverture).
 
 À la fin de la plage active, les volets encore protégés remontent.
 
@@ -246,7 +261,7 @@ Une série d'entités par façade (Nord, Est, Sud, Ouest et vos façades ajouté
 | Entité | Type | Usage |
 |---|---|---|
 | `binary_sensor.volets_facade_<nom>_exposee` | binary_sensor | `on` quand la façade reçoit le soleil (météo comprise), `off` sinon, inconnu si le capteur d'exposition est indisponible. Attributs : `facade`, `orientation`, `azimuth`, `source` (`sun` ou `entity`), `windows` (toutes les plages d'ensoleillement théoriques du jour). |
-| `sensor.volets_facade_<nom>_debut` | sensor (horodatage) | Début de la plage d'ensoleillement en cours, sinon de la prochaine du jour. Vide s'il n'y en a plus, ou en mode « capteur existant ». |
+| `sensor.volets_facade_<nom>_debut` | sensor (horodatage) | Début de la plage d'ensoleillement en cours, sinon de la prochaine, sinon de la dernière du jour. Vide si la façade n'est jamais exposée ce jour-là, ou en mode « capteur existant ». |
 | `sensor.volets_facade_<nom>_fin` | sensor (horodatage) | Fin de cette même plage. |
 
 Ces entités portent des noms différents de vos éventuels capteurs `binary_sensor.volets_exposition_*` : il n'y a

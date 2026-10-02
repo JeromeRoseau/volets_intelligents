@@ -1,10 +1,14 @@
 # Changelog
 
-## 0.9.0
+## 2026.10.1
+
+Les versions suivent désormais le schéma `année.mois.numéro dans le mois` (2026.10.1 = première version d'octobre 2026).
 
 - Panneau : chaque mode global (Automatique, Manuel, Arrêt) et chaque scénario (Été, Hiver, Vacances, Désactivé) est décrit sous son sélecteur du tableau de bord et dans l'onglet « Entités » (liste des valeurs).
-- Scénario Hiver : option « Ne pas ouvrir les volets quand l'alarme est activée » (onglet Scénarios) avec choix de l'entité `alarm_control_panel`. Alarme activée = états `armed_*` ou `triggered` ; entité absente ou indisponible : rien n'est bloqué.
-- README : une capture d'écran par onglet du panneau (données de démonstration).
+- Scénario Hiver : condition d'ouverture au choix (onglet Scénarios) : pièce ET extérieur (comportement actuel, par défaut), pièce seulement ou extérieur seulement. En mode « pièce seulement », une température extérieure indisponible ne bloque plus l'ouverture.
+- Scénario Été : la condition de réouverture accepte aussi « pièce seulement » et « extérieur seulement » (en plus de « pièce ET extérieur » et « pièce OU extérieur »).
+- Alarme : nouvelle entité `alarm_control_panel` dans Réglages. Chaque scénario (Été, Hiver, Vacances) a deux options : « Ne pas ouvrir quand l'alarme est activée » et « Ne pas ouvrir quand l'alarme est activée ET qu'une fenêtre est ouverte ». Alarme activée = états `armed_*` ou `triggered` ; entité absente ou indisponible : rien n'est bloqué. La mise en sécurité contre le vent n'est jamais bloquée.
+- README : une capture d'écran par onglet du panneau (données de démonstration) ; README en anglais (`README.en.md`).
 - Cumul des évolutions 0.3.x : bouton « Auto » par volet, seuils des scénarios (été et hiver) en entités `number`, capteurs de façade persistants sur la journée.
 
 ## 0.3.10

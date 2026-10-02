@@ -51,6 +51,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "weather_entity": None,
         "sunny_conditions": ["sunny", "partlycloudy"],
         "wind_entity": None,
+        "alarm_entity": None,
         "wind_threshold": 50,
         "wind_release_ratio": 0.8,
         "evaluation_interval_minutes": 5,
@@ -77,16 +78,24 @@ DEFAULT_CONFIG: dict[str, Any] = {
             "open_outdoor": 22,
             "open_room": 22,
             "release_mode": "all",
+            "block_open_alarm": False,
+            "block_open_alarm_window": False,
         },
         "winter": {
             "label": "Hiver",
             "kind": KIND_GAIN,
             "gain_room_below": 20,
             "gain_outdoor_below": 15,
-            "block_when_alarm": False,
-            "alarm_entity": None,
+            "gain_condition": "both",
+            "block_open_alarm": False,
+            "block_open_alarm_window": False,
         },
-        "vacation": {"label": "Vacances", "kind": KIND_HOLD},
+        "vacation": {
+            "label": "Vacances",
+            "kind": KIND_HOLD,
+            "block_open_alarm": False,
+            "block_open_alarm_window": False,
+        },
         "off": {"label": "Désactivé", "kind": KIND_OFF},
     },
     "facades": [],  # rempli plus bas avec les 4 façades
@@ -265,6 +274,7 @@ _SETTINGS = vol.Schema(
         vol.Required("weather_entity"): _entity("weather"),
         vol.Required("sunny_conditions"): _list_of(_str(40)),
         vol.Required("wind_entity"): _entity("sensor", "input_number"),
+        vol.Required("alarm_entity"): _entity("alarm_control_panel"),
         vol.Required("wind_threshold"): _num(0, 500),
         vol.Required("wind_release_ratio"): _num(0.1, 1.0),
         vol.Required("evaluation_interval_minutes"): _int(1, 60),
@@ -329,15 +339,21 @@ _SCENARIO_FIELDS: dict[str, dict[str, Any]] = {
         "close_room": _num(-30, 60),
         "open_outdoor": _num(-30, 60),
         "open_room": _num(-30, 60),
-        "release_mode": vol.In(("all", "any")),
+        "release_mode": vol.In(("all", "any", "room", "outdoor")),
+        "block_open_alarm": _bool,
+        "block_open_alarm_window": _bool,
     },
     KIND_GAIN: {
         "gain_room_below": _num(-30, 60),
         "gain_outdoor_below": _num(-30, 60),
-        "block_when_alarm": _bool,
-        "alarm_entity": _entity("alarm_control_panel"),
+        "gain_condition": vol.In(("both", "room", "outdoor")),
+        "block_open_alarm": _bool,
+        "block_open_alarm_window": _bool,
     },
-    KIND_HOLD: {},
+    KIND_HOLD: {
+        "block_open_alarm": _bool,
+        "block_open_alarm_window": _bool,
+    },
     KIND_OFF: {},
 }
 
@@ -372,6 +388,23 @@ def _validate(schema: vol.Schema, data: dict[str, Any], where: str) -> dict[str,
         raise ConfigError(f"{where} : {path} — {err.msg}") from err
 
 
+def _migrate_alarm(raw: dict[str, Any]) -> dict[str, Any]:
+    """Reprend l'ancienne option d'alarme du seul scénario Hiver (entité + case) vers les nouveaux réglages."""
+    winter = (raw.get("scenarios") or {}).get("winter") if isinstance(raw.get("scenarios"), dict) else None
+    if not isinstance(winter, dict) or not ("alarm_entity" in winter or "block_when_alarm" in winter):
+        return raw
+    raw = copy.deepcopy(raw)
+    winter = raw["scenarios"]["winter"]
+    entity = winter.pop("alarm_entity", None)
+    blocked = winter.pop("block_when_alarm", None)
+    settings = raw.setdefault("settings", {})
+    if isinstance(settings, dict) and entity and not settings.get("alarm_entity"):
+        settings["alarm_entity"] = entity
+    if blocked is not None and "block_open_alarm" not in winter:
+        winter["block_open_alarm"] = blocked
+    return raw
+
+
 def normalize_config(raw: Any) -> dict[str, Any]:
     """Complète, valide et retourne une configuration propre.
 
@@ -380,6 +413,7 @@ def normalize_config(raw: Any) -> dict[str, Any]:
     if not isinstance(raw, dict):
         raise ConfigError("La configuration doit être un objet")
 
+    raw = _migrate_alarm(raw)
     merged = _merge(
         DEFAULT_CONFIG, {k: v for k, v in raw.items() if k != "facades" and k != "covers"}
     )
