@@ -12,7 +12,7 @@ from homeassistant.exceptions import HomeAssistantError, Unauthorized
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
-from .const import DOMAIN, SIGNAL_STATUS_UPDATED
+from .const import CONF_ALLOWED_USERS, DOMAIN, SIGNAL_STATUS_UPDATED
 from .manager import VoletsManager
 from .number import SCENARIO_THRESHOLDS
 from .schema import ConfigError, default_config
@@ -31,6 +31,26 @@ def _require_manager(hass: HomeAssistant, connection, msg_id: int) -> VoletsMana
     if manager is None:
         connection.send_error(msg_id, "not_loaded", "Volets Intelligents n'est pas démarré")
     return manager
+
+
+def _has_full_access(hass: HomeAssistant, connection) -> bool:
+    """Administrateur, ou personne désignée dans les options de l'intégration."""
+    user = connection.user
+    if user is None:
+        return False
+    if user.is_admin:
+        return True
+    return any(
+        user.id in (entry.options.get(CONF_ALLOWED_USERS) or [])
+        for entry in hass.config_entries.async_entries(DOMAIN)
+    )
+
+
+def _require_full_access(hass: HomeAssistant, connection, msg_id: int) -> bool:
+    if _has_full_access(hass, connection):
+        return True
+    connection.send_error(msg_id, "unauthorized", "Accès réservé aux administrateurs et aux personnes désignées")
+    return False
 
 
 def _select_entity_id(hass: HomeAssistant, manager: VoletsManager, suffix: str) -> str | None:
@@ -53,6 +73,7 @@ def _check_control(connection, entity_ids: list[str | None]) -> None:
 
 @callback
 def async_register_websocket_api(hass: HomeAssistant) -> None:
+    websocket_api.async_register_command(hass, ws_get_access)
     websocket_api.async_register_command(hass, ws_get_config)
     websocket_api.async_register_command(hass, ws_set_config)
     websocket_api.async_register_command(hass, ws_get_entities)
@@ -61,10 +82,18 @@ def async_register_websocket_api(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, ws_command)
 
 
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/get_access"})
+@callback
+def ws_get_access(hass: HomeAssistant, connection, msg: dict[str, Any]) -> None:
+    """Indique au panneau si l'utilisateur peut voir et modifier la configuration."""
+    connection.send_result(msg["id"], {"full": _has_full_access(hass, connection)})
+
+
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/get_config"})
-@websocket_api.require_admin
 @callback
 def ws_get_config(hass: HomeAssistant, connection, msg: dict[str, Any]) -> None:
+    if not _require_full_access(hass, connection, msg["id"]):
+        return
     manager = _require_manager(hass, connection, msg["id"])
     if manager:
         connection.send_result(msg["id"], {"config": manager.config, "defaults": default_config()})
@@ -73,9 +102,10 @@ def ws_get_config(hass: HomeAssistant, connection, msg: dict[str, Any]) -> None:
 @websocket_api.websocket_command(
     {vol.Required("type"): f"{DOMAIN}/set_config", vol.Required("config"): dict}
 )
-@websocket_api.require_admin
 @websocket_api.async_response
 async def ws_set_config(hass: HomeAssistant, connection, msg: dict[str, Any]) -> None:
+    if not _require_full_access(hass, connection, msg["id"]):
+        return
     manager = _require_manager(hass, connection, msg["id"])
     if not manager:
         return
@@ -88,10 +118,11 @@ async def ws_set_config(hass: HomeAssistant, connection, msg: dict[str, Any]) ->
 
 
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/get_entities"})
-@websocket_api.require_admin
 @callback
 def ws_get_entities(hass: HomeAssistant, connection, msg: dict[str, Any]) -> None:
     """Identifiants réels des entités créées (d'après leur unique_id, donc même renommées)."""
+    if not _require_full_access(hass, connection, msg["id"]):
+        return
     manager = _require_manager(hass, connection, msg["id"])
     if not manager:
         return

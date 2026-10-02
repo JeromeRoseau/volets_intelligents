@@ -16,6 +16,7 @@ from homeassistant.helpers import config_validation as cv
 
 from .const import (
     CARD_JS,
+    CONF_ALLOWED_USERS,
     CONF_SHOW_SIDEBAR,
     DOMAIN,
     PANEL_ELEMENT,
@@ -85,7 +86,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await manager.async_load()
     entry.runtime_data = manager
 
-    await _async_register_frontend(hass, entry.options.get(CONF_SHOW_SIDEBAR, True))
+    await _async_register_frontend(
+        hass,
+        entry.options.get(CONF_SHOW_SIDEBAR, True),
+        bool(entry.options.get(CONF_ALLOWED_USERS)),
+    )
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(_async_options_updated))
     await manager.async_start()
@@ -109,7 +114,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return unloaded
 
 
-async def _async_register_frontend(hass: HomeAssistant, show_sidebar: bool = True) -> None:
+async def _async_register_frontend(
+    hass: HomeAssistant, show_sidebar: bool = True, has_designated_users: bool = False
+) -> None:
     """Sert les fichiers JS, ajoute le panneau latéral et la carte Lovelace."""
     if not hass.data.get(_STATIC_KEY):
         await hass.http.async_register_static_paths(
@@ -124,7 +131,7 @@ async def _async_register_frontend(hass: HomeAssistant, show_sidebar: bool = Tru
         sidebar_title="Volets" if show_sidebar else None,
         sidebar_icon="mdi:blinds-horizontal" if show_sidebar else None,
         module_url=f"{URL_BASE}/{PANEL_JS}?v={VERSION}",
-        require_admin=True,
+        require_admin=not has_designated_users,
         config={},
     )
     ha_frontend.add_extra_js_url(hass, f"{URL_BASE}/{CARD_JS}?v={VERSION}")

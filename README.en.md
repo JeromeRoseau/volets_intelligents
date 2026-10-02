@@ -27,7 +27,9 @@ panel** and a **Lovelace card**. No YAML to write.
   condition) and **Disabled** (no sun-related action). Chosen manually, or automatically according to the
   month. Each scenario is described under its selector in the panel.
 - **Opening condition (Winter)**: your choice of **room AND outdoor** under their thresholds (default),
-  **room only** or **outdoor only** (the other threshold is then ignored). Set in the Scenarios tab.
+  **room OR outdoor** (either is enough), **room only** or **outdoor only** (the other threshold is then ignored).
+  An optional **low outdoor limit** (can be negative) stops the shutter from opening when the outdoor temperature is
+  at or below it. Set in the Scenarios tab.
 - **Alarm**: pick an `alarm_control_panel` entity (Settings). Each acting scenario (Summer, Winter, Vacation)
   has two independent options:
   - "**Do not open when the alarm is armed**": no automatic opening while the alarm is armed (`armed_*`
@@ -121,6 +123,14 @@ checkbox lets you remove the sidebar entry. The panel stays reachable at `/volet
 provided in that same window) and through the **Visit** button on the "Volets Intelligents" device page. The
 Lovelace card is not affected. The change reloads the integration (a few seconds).
 
+### Giving other people access to the panel
+
+In the same **Configure** window, the "Designated people (full panel access)" field lets you pick non-administrator
+Home Assistant accounts. They get **every tab** of the panel (shutters, facades, scenarios, entities, settings) and
+can change anything, like an administrator; access is enforced server-side. Other non-administrator accounts only
+see the Dashboard tab. Empty by default (administrators only). Once at least one person is designated, the "Volets"
+entry shows in every account's sidebar (hide it with the checkbox above).
+
 ### Icon in HACS's update list
 
 The integration ships its icon and logo (`brand/` folder), which Home Assistant 2026.3 and later display on the
@@ -182,9 +192,6 @@ The screenshots below use demonstration data.
 ### Settings
 
 ![Settings](docs/screenshots/en/settings.png)
-
-To get going quickly with a complete configuration, paste the contents of `examples/config-jerome.json`
-into Settings > Backup and import, then click **Import** and **Save**.
 
 ### How the sun is computed
 
@@ -447,12 +454,12 @@ open window, wind, start-up delay, scenarios). No code was copied.
 ## Development
 
 ```bash
-pip install pytest-homeassistant-custom-component ruff
-ruff check . && pytest
+pip install ruff
+ruff check .
 ```
 
 The decision engine (`engine.py`) and the validation (`schema.py`) do not import Home Assistant and can be
-tested on their own. The frontend (`frontend/`) is plain JavaScript, with no build step. The data contract
+imported on their own. The frontend (`frontend/`) is plain JavaScript, with no build step. The data contract
 between frontend and backend is described in `docs/API.md`.
 
 The sunshine windows displayed are theoretical (geometry only, no weather).

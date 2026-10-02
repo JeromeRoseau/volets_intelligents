@@ -352,9 +352,13 @@ const I18N = {
     "scn.gainOutdoor": "Extérieur : en dessous de (°C)",
     "scn.gainCondition": "Condition d'ouverture",
     "scn.gainBoth": "Pièce ET extérieur",
+    "scn.gainAny": "Pièce OU extérieur",
+    "scn.gainMinEnabled": "Limite extérieure basse : ne plus ouvrir en dessous",
+    "scn.gainMinHelp": "Quand la température extérieure est inférieure ou égale à cette limite (peut être négative), le volet n'est plus ouvert, même si le soleil et les autres conditions sont réunis.",
+    "scn.gainMin": "Limite extérieure (°C)",
     "scn.gainRoomOnly": "Pièce seulement",
     "scn.gainOutdoorOnly": "Extérieur seulement",
-    "scn.gainConditionHelp": "Pièce ET extérieur : le volet s'ouvre quand la pièce et l'extérieur sont sous leurs seuils. Pièce seulement ou extérieur seulement : un seul seuil compte, l'autre est ignoré.",
+    "scn.gainConditionHelp": "Pièce ET extérieur : le volet s'ouvre quand la pièce et l'extérieur sont sous leurs seuils. Pièce OU extérieur : un seul des deux suffit. Pièce seulement ou extérieur seulement : un seul seuil compte, l'autre est ignoré.",
 
     "set.house": "Maison",
     "set.houseOrientation": "Orientation de la maison (°)",
@@ -760,9 +764,13 @@ const I18N = {
     "scn.gainOutdoor": "Outdoor: below (°C)",
     "scn.gainCondition": "Opening condition",
     "scn.gainBoth": "Room AND outdoor",
+    "scn.gainAny": "Room OR outdoor",
+    "scn.gainMinEnabled": "Low outdoor limit: stop opening below",
+    "scn.gainMinHelp": "When the outdoor temperature is at or below this limit (can be negative), the shutter is no longer opened, even if sun and the other conditions are met.",
+    "scn.gainMin": "Outdoor limit (°C)",
     "scn.gainRoomOnly": "Room only",
     "scn.gainOutdoorOnly": "Outdoor only",
-    "scn.gainConditionHelp": "Room AND outdoor: the shutter opens when both the room and the outdoors are below their thresholds. Room only or outdoor only: a single threshold counts, the other is ignored.",
+    "scn.gainConditionHelp": "Room AND outdoor: the shutter opens when both the room and the outdoors are below their thresholds. Room OR outdoor: either one is enough. Room only or outdoor only: a single threshold counts, the other is ignored.",
 
     "set.house": "House",
     "set.houseOrientation": "House orientation (°)",
@@ -1288,8 +1296,22 @@ class VoletsIntelligentsPanel extends HTMLElement {
   _start() {
     if (this._started || !this.isConnected || !this._hass) return;
     this._started = true;
-    if (!this._config) this._loadConfig();
+    // Accès complet : administrateurs et personnes désignées. Les autres voient un message.
+    this._hass.callWS({ type: `${WS}get_access` }).then(
+      (res) => this._applyAccess(Boolean(res && res.full)),
+      () => this._applyAccess(!(this._hass.user && this._hass.user.is_admin === false)),
+    );
     this._subscribe();
+  }
+
+  _applyAccess(full) {
+    this._limited = !full;
+    for (const [id, btn] of this._tabButtons) btn.hidden = !full && id !== "dashboard";
+    if (full) {
+      if (!this._config) this._loadConfig();
+    } else {
+      this._renderMain();
+    }
   }
 
   async _loadConfig() {
@@ -2433,9 +2455,11 @@ class VoletsIntelligentsPanel extends HTMLElement {
         temp("gain_outdoor_below", this._t("scn.gainOutdoor")));
       specific = [specific,
         this._field(this._t("scn.gainCondition"),
-          this._select(sc, "gain_condition", [["both", this._t("scn.gainBoth")], ["room", this._t("scn.gainRoomOnly")],
-            ["outdoor", this._t("scn.gainOutdoorOnly")]]),
-          this._t("scn.gainConditionHelp"))];
+          this._select(sc, "gain_condition", [["both", this._t("scn.gainBoth")], ["any", this._t("scn.gainAny")],
+            ["room", this._t("scn.gainRoomOnly")], ["outdoor", this._t("scn.gainOutdoorOnly")]]),
+          this._t("scn.gainConditionHelp")),
+        this._toggle(sc, "gain_outdoor_min_enabled", this._t("scn.gainMinEnabled"), this._t("scn.gainMinHelp")),
+        el("div", { class: "fields" }, temp("gain_outdoor_min", this._t("scn.gainMin")))];
     } else if (sc.kind === "hold_shaded") {
       specific = [el("p", { class: "muted small", text: this._t("scn.noThresholds") })];
     } else {

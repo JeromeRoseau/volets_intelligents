@@ -49,7 +49,9 @@ Stockée dans `.storage/volets_intelligents.config`. Envoyée/reçue en entier p
                   "block_open_alarm_window": false }, // true : idem, mais seulement si une fenêtre du volet est ouverte
     "winter":   { "label": "Hiver",    "kind": "solar_gain",
                   "gain_room_below": 20, "gain_outdoor_below": 15,
-                  "gain_condition": "both",             // "both" (pièce ET extérieur) | "room" | "outdoor"
+                  "gain_condition": "both",             // "both" (pièce ET extérieur) | "any" (pièce OU extérieur) | "room" | "outdoor"
+                  "gain_outdoor_min_enabled": false,    // limite extérieure basse active ?
+                  "gain_outdoor_min": -10,              // °C, peut être négatif : extérieur <= limite => pas d'ouverture
                   "block_open_alarm": false,
                   "block_open_alarm_window": false },
     "vacation": { "label": "Vacances", "kind": "hold_shaded",
@@ -179,14 +181,15 @@ no_data/unavailable = rouge, le reste = gris.
 
 | type | droits | payload | résultat |
 |---|---|---|---|
-| `volets_intelligents/get_config` | admin | — | `{ "config": <config>, "defaults": <config par défaut> }` |
-| `volets_intelligents/set_config` | admin | `{ "config": <config> }` | `{ "config": <config normalisée> }` ; erreur `code="invalid_config"` avec `message` en français |
-| `volets_intelligents/get_entities` | admin | — | `{ "mode", "scenario", "outdoor", "window": { "active", "start", "end", "start_setting", "end_setting", "end_mode", "sunset_offset" }, "facades": [ { "id", "name", "exposed", "start", "end" } ], "covers": [ { "cover", "name", "facade", "switch", "status" } ] }` : identifiants réels des entités (null si absente) |
+| `volets_intelligents/get_access` | utilisateur | — | `{ "full": bool }` : `true` pour un administrateur ou une personne désignée |
+| `volets_intelligents/get_config` | admin ou personne désignée | — | `{ "config": <config>, "defaults": <config par défaut> }` |
+| `volets_intelligents/set_config` | admin ou personne désignée | `{ "config": <config> }` | `{ "config": <config normalisée> }` ; erreur `code="invalid_config"` avec `message` en français |
+| `volets_intelligents/get_entities` | admin ou personne désignée | — | `{ "mode", "scenario", "outdoor", "window": { "active", "start", "end", "start_setting", "end_setting", "end_mode", "sunset_offset" }, "facades": [ { "id", "name", "exposed", "start", "end" } ], "covers": [ { "cover", "name", "facade", "switch", "status" } ] }` : identifiants réels des entités (null si absente) |
 | `volets_intelligents/get_status` | utilisateur | — | `{ "status": <status> }` |
 | `volets_intelligents/subscribe_status` | utilisateur | — | abonnement : un événement `<status>` à chaque évaluation (+ un initial) |
 | `volets_intelligents/command` | utilisateur | `{ "command": ..., ... }` | `{ "ok": true }` |
 
-Droits (suivent ceux de Home Assistant) : `get_config` et `set_config` exigent un administrateur ;
+Droits (suivent ceux de Home Assistant) : `get_config`, `set_config` et `get_entities` exigent un administrateur ou une personne désignée (option `allowed_users` de l'intégration) ;
 `get_status` et `subscribe_status` sont ouverts à tout utilisateur ; `command` exige le droit de
 **contrôle** sur les entités concernées (`select.volets_mode` pour `set_mode`, `select.volets_scenario`
 pour `set_scenario`, les `cover.*` visés pour `pause`/`resume`, tous les volets gérés si aucun n'est

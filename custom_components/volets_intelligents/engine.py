@@ -358,8 +358,21 @@ def _gain(cover: dict[str, Any], inp: CoverInputs, rt: CoverRuntime, env: Env) -
         wants_open = cold_room
     elif condition == "outdoor":
         wants_open = cold_out
+    elif condition == "any":
+        wants_open = cold_room or cold_out
     else:
         wants_open = cold_room and cold_out
+    if (
+        wants_open
+        and sc.get("gain_outdoor_min_enabled")
+        and outdoor is not None
+        and outdoor <= sc.get("gain_outdoor_min", -10)
+    ):
+        return Decision(
+            ST_WATCHING,
+            f"{_exposure_text(inp)} mais il fait trop froid dehors ({_fmt(outdoor)} °C, "
+            f"limite {_fmt(sc.get('gain_outdoor_min', -10))} °C) : le volet n'est pas ouvert",
+        )
     if wants_open and not is_open(cover, inp, env.tolerance):
         if _cooldown(rt, env):
             return Decision(ST_COOLDOWN, "Attente de l'intervalle minimal entre deux mouvements")

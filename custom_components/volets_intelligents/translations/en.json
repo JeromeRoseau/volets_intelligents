@@ -8,18 +8,20 @@
     },
     "abort": {
       "single_instance_allowed": "Already configured."
-    },
-    "options": {
-      "step": {
-        "init": {
-          "title": "Volets Intelligents",
-          "description": "The control panel is available here: [Management interface]({panel_url}). Even when hidden from the sidebar, it stays reachable at this address, and from the device page (\"Visit\" button).",
-          "data": {
-            "show_sidebar": "Show \"Volets\" in the sidebar"
-          },
-          "data_description": {
-            "show_sidebar": "Untick to remove the sidebar entry. The panel and the Lovelace card keep working."
-          }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Volets Intelligents",
+        "description": "The control panel is available here: [Management interface]({panel_url}). Even when hidden from the sidebar, it stays reachable at this address, and from the device page (\"Visit\" button).",
+        "data": {
+          "show_sidebar": "Show \"Volets\" in the sidebar",
+          "allowed_users": "Designated people (full panel access)"
+        },
+        "data_description": {
+          "show_sidebar": "Untick to remove the sidebar entry. The panel and the Lovelace card keep working.",
+          "allowed_users": "Non-administrator Home Assistant accounts allowed to view and edit the whole configuration (shutters, facades, scenarios, settings). Administrators always have access. Leave empty to keep the panel admin-only."
         }
       }
     }

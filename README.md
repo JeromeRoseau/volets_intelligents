@@ -27,7 +27,9 @@ graphique** et une **carte Lovelace**. Aucun YAML à écrire.
   condition de température) et **Désactivé** (aucune action liée au soleil). Choix manuel, ou automatique selon
   le mois. Chaque scénario est décrit sous son sélecteur dans le panneau.
 - **Condition d'ouverture (Hiver)** : au choix, la **pièce ET l'extérieur** sous leurs seuils (par défaut), la
-  **pièce seulement** ou l'**extérieur seulement** (l'autre seuil est alors ignoré). Réglage dans l'onglet Scénarios.
+  la **pièce OU l'extérieur** (un seul suffit), la **pièce seulement** ou l'**extérieur seulement** (l'autre seuil
+  est alors ignoré). Une **limite extérieure basse** optionnelle (négative possible) empêche d'ouvrir le volet quand
+  l'extérieur est à cette température ou en dessous. Réglages dans l'onglet Scénarios.
 - **Alarme** : choisissez une entité `alarm_control_panel` (Réglages). Chaque scénario d'action (Été, Hiver,
   Vacances) propose deux options, indépendantes :
   - « **Ne pas ouvrir quand l'alarme est activée** » : aucune ouverture automatique tant que l'alarme est armée
@@ -121,6 +123,15 @@ latéral » permet de retirer l'entrée du menu. Le panneau reste accessible à 
 fourni dans cette même fenêtre) et par le bouton **Visiter** de la page de l'appareil « Volets Intelligents ». La carte
 Lovelace n'est pas concernée. Le changement recharge l'intégration (quelques secondes).
 
+### Donner accès au panneau à d'autres personnes
+
+Dans la même fenêtre **Configurer**, le champ « Personnes désignées (accès complet au panneau) » permet de choisir des
+comptes Home Assistant non administrateurs. Ces personnes ont accès à **tous les onglets** du panneau (volets,
+façades, scénarios, entités, réglages) et peuvent tout modifier, comme un administrateur ; l'accès est contrôlé côté
+serveur. Les autres comptes non administrateurs ne voient que l'onglet Tableau de bord. Champ vide par défaut
+(administrateurs seulement). Une fois au moins une personne désignée, l'entrée « Volets » apparaît dans le menu de
+tous les comptes (menu masquable avec la case ci-dessus).
+
 ### Icône dans la liste des mises à jour de HACS
 
 L'intégration fournit son icône et son logo (dossier `brand/`), que Home Assistant 2026.3 et plus affichent sur la page de
@@ -182,9 +193,6 @@ Les captures ci-dessous utilisent des données de démonstration.
 ### Réglages
 
 ![Réglages](docs/screenshots/reglages.png)
-
-Pour démarrer vite avec une configuration complète, collez le contenu d'`examples/config-jerome.json`
-dans Réglages > Sauvegarde et import, puis cliquez sur **Importer** et **Enregistrer**.
 
 ### Comment le soleil est calculé
 
@@ -447,12 +455,12 @@ Aucun code n'a été copié.
 ## Développement
 
 ```bash
-pip install pytest-homeassistant-custom-component ruff
-ruff check . && pytest
+pip install ruff
+ruff check .
 ```
 
 Le moteur de décision (`engine.py`) et la validation (`schema.py`) n'importent pas Home Assistant
-et se testent seuls. Le frontend (`frontend/`) est en JavaScript pur, sans étape de build.
+et peuvent être importés seuls. Le frontend (`frontend/`) est en JavaScript pur, sans étape de build.
 Le contrat de données entre frontend et backend est décrit dans `docs/API.md`.
 
 Les plages d'ensoleillement affichées sont théoriques (géométrie seule, sans météo).

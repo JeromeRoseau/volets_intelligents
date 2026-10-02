@@ -1,11 +1,18 @@
 # Changelog
 
+## 2026.10.2
+
+- Nouvelle option d'intégration « Personnes désignées » : des comptes non administrateurs choisis ont accès à tous les onglets du panneau et peuvent tout modifier (contrôlé côté serveur) ; les autres comptes non admin ne voient que le Tableau de bord. Nouvelle commande WebSocket `get_access`.
+- Scénario Hiver : nouvelle condition d'ouverture « pièce OU extérieur » (en plus de pièce ET extérieur, pièce seulement, extérieur seulement).
+- Scénario Hiver : limite extérieure basse optionnelle (peut être négative) : quand l'extérieur est à cette température ou en dessous, le volet n'est plus ouvert.
+- Correction : les textes de la fenêtre « Configurer » (traductions des options) étaient mal placés dans `strings.json` et les traductions.
+
 ## 2026.10.1
 
 Les versions suivent désormais le schéma `année.mois.numéro dans le mois` (2026.10.1 = première version d'octobre 2026).
 
 - Panneau : chaque mode global (Automatique, Manuel, Arrêt) et chaque scénario (Été, Hiver, Vacances, Désactivé) est décrit sous son sélecteur du tableau de bord et dans l'onglet « Entités » (liste des valeurs).
-- Scénario Hiver : condition d'ouverture au choix (onglet Scénarios) : pièce ET extérieur (comportement actuel, par défaut), pièce seulement ou extérieur seulement. En mode « pièce seulement », une température extérieure indisponible ne bloque plus l'ouverture.
+- Scénario Hiver : condition d'ouverture au choix (onglet Scénarios) : pièce ET extérieur (par défaut), pièce seulement ou extérieur seulement. En mode « pièce seulement », une température extérieure indisponible ne bloque plus l'ouverture.
 - Scénario Été : la condition de réouverture accepte aussi « pièce seulement » et « extérieur seulement » (en plus de « pièce ET extérieur » et « pièce OU extérieur »).
 - Alarme : nouvelle entité `alarm_control_panel` dans Réglages. Chaque scénario (Été, Hiver, Vacances) a deux options : « Ne pas ouvrir quand l'alarme est activée » et « Ne pas ouvrir quand l'alarme est activée ET qu'une fenêtre est ouverte ». Alarme activée = états `armed_*` ou `triggered` ; entité absente ou indisponible : rien n'est bloqué. La mise en sécurité contre le vent n'est jamais bloquée.
 - README : une capture d'écran par onglet du panneau (données de démonstration) ; README en anglais (`README.en.md`).
